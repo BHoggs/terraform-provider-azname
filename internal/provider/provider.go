@@ -198,8 +198,8 @@ func (p *aznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	resp.ResourceData = config
-	resp.DataSourceData = config
+	resp.ResourceData = &config
+	resp.DataSourceData = &config
 }
 
 // DataSources defines the data sources implemented in the provider.
