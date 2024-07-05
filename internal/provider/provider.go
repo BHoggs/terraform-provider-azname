@@ -1,93 +1,215 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package provider
 
 import (
 	"context"
-	"net/http"
+	"os"
+	"strconv"
+	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure ScaffoldingProvider satisfies various provider interfaces.
-var _ provider.Provider = &ScaffoldingProvider{}
-var _ provider.ProviderWithFunctions = &ScaffoldingProvider{}
+// Ensure the implementation satisfies the expected interfaces.
+var (
+	_ provider.Provider = &aznameProvider{}
+)
 
-// ScaffoldingProvider defines the provider implementation.
-type ScaffoldingProvider struct {
+// New is a helper function to simplify provider server and testing implementation.
+func New(version string) func() provider.Provider {
+	return func() provider.Provider {
+		return &aznameProvider{
+			version: version,
+		}
+	}
+}
+
+// aznameProvider is the provider implementation.
+type aznameProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-// ScaffoldingProviderModel describes the provider data model.
-type ScaffoldingProviderModel struct {
-	Endpoint types.String `tfsdk:"endpoint"`
+// aznameProviderModel maps provider schema data to a Go type.
+type aznameProviderModel struct {
+	Template       types.String `tfsdk:"template"`
+	TemplateChild  types.String `tfsdk:"template_child"`
+	Separator      types.String `tfsdk:"separator"`
+	Prefixes       types.List   `tfsdk:"prefixes"`
+	Suffixes       types.List   `tfsdk:"suffixes"`
+	CleanOutput    types.Bool   `tfsdk:"clean_output"`
+	TrimOutput     types.Bool   `tfsdk:"trim_output"`
+	RandomLength   types.Int64  `tfsdk:"random_length"`
+	InstanceLength types.Int64  `tfsdk:"instance_length"`
 }
 
-func (p *ScaffoldingProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "scaffolding"
+// Metadata returns the provider type name.
+func (p *aznameProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "azname"
 	resp.Version = p.version
 }
 
-func (p *ScaffoldingProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+// Schema defines the provider-level schema for configuration data.
+func (p *aznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "Example provider attribute",
-				Optional:            true,
+			"template": schema.StringAttribute{
+				Optional: true,
+			},
+			"template_child": schema.StringAttribute{
+				Optional: true,
+			},
+			"separator": schema.StringAttribute{
+				Optional: true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtMost(1),
+				},
+			},
+			"prefixes": schema.ListAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+			},
+			"suffixes": schema.ListAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+			},
+			"clean_output": schema.BoolAttribute{
+				Optional: true,
+			},
+			"trim_output": schema.BoolAttribute{
+				Optional: true,
+			},
+			"random_length": schema.Int64Attribute{
+				Optional: true,
+				Validators: []validator.Int64{
+					int64validator.Between(1, 6),
+				},
+			},
+			"instance_length": schema.Int64Attribute{
+				Optional: true,
+				Validators: []validator.Int64{
+					int64validator.Between(1, 6),
+				},
 			},
 		},
 	}
 }
 
-func (p *ScaffoldingProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ScaffoldingProviderModel
+func (p *aznameProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var config aznameProviderModel
+	diags := req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	template := os.Getenv("AZNAME_TEMPLATE")
+	template_child := os.Getenv("AZNAME_TEMPLATE_CHILD")
+	separator := os.Getenv("AZNAME_SEPARATOR")
+	prefixes := os.Getenv("AZNAME_PREFIX")
+	suffixes := os.Getenv("AZNAME_SUFFIX")
+	clean_output := os.Getenv("AZNAME_CLEAN_OUTPUT")
+	trim_output := os.Getenv("AZNAME_TRIM_OUTPUT")
+	random_length := os.Getenv("AZNAME_RANDOM_LENGTH")
+	instance_length := os.Getenv("AZNAME_INSTANCE_LENGTH")
+
+	// Set defaults if the environment variables are not set.
+	if template == "" {
+		template = "{prefix}~{resource_type}~{workload}~{environment}~{service}~{location}{instance}{rand}~{suffix}"
+	}
+	if template_child == "" {
+		template_child = "{parent_name}~{resource_type}{instance}~{rand}"
+	}
+	if separator == "" {
+		separator = "-"
+	}
+	if clean_output == "" {
+		clean_output = "1"
+	}
+	if trim_output == "" {
+		trim_output = "1"
+	}
+	if random_length == "" {
+		random_length = "3"
+	}
+	if instance_length == "" {
+		instance_length = "3"
+	}
+
+	// Check for required attributes, and set defaults.
+	if config.Template.IsNull() {
+		config.Template = types.StringValue(template)
+	}
+	if config.TemplateChild.IsNull() {
+		config.TemplateChild = types.StringValue(template_child)
+	}
+	if config.Separator.IsNull() {
+		config.Separator = types.StringValue(separator)
+	}
+	if config.Prefixes.IsNull() {
+		prefixList := strings.Split(prefixes, ",")
+		var attrPrefixes []attr.Value
+		for _, prefix := range prefixList {
+			attrPrefixes = append(attrPrefixes, types.StringValue(prefix))
+		}
+		config.Prefixes, diags = types.ListValue(types.StringType, attrPrefixes)
+		resp.Diagnostics.Append(diags...)
+	}
+	if config.Suffixes.IsNull() {
+		suffixList := strings.Split(suffixes, ",")
+		var attrSuffixes []attr.Value
+		for _, suffix := range suffixList {
+			attrSuffixes = append(attrSuffixes, types.StringValue(suffix))
+		}
+		config.Suffixes, diags = types.ListValue(types.StringType, attrSuffixes)
+		resp.Diagnostics.Append(diags...)
+	}
+	if config.CleanOutput.IsNull() {
+		config.CleanOutput = types.BoolValue(clean_output == "1")
+	}
+	if config.TrimOutput.IsNull() {
+		config.TrimOutput = types.BoolValue(trim_output == "1")
+	}
+	if config.RandomLength.IsNull() {
+		randomLength, err := strconv.ParseInt(random_length, 10, 64)
+		if err != nil || randomLength < 1 || randomLength > 6 {
+			resp.Diagnostics.AddError("Invalid value for AZNAME_RANDOM_LENGTH", "The value must be a number between 1 and 6")
+		}
+		config.RandomLength = types.Int64Value(randomLength)
+	}
+	if config.InstanceLength.IsNull() {
+		instanceLength, err := strconv.ParseInt(instance_length, 10, 64)
+		if err != nil || instanceLength < 1 || instanceLength > 6 {
+			resp.Diagnostics.AddError("Invalid value for AZNAME_INSTANCE_LENGTH", "The value must be a number between 1 and 6")
+		}
+		config.InstanceLength = types.Int64Value(instanceLength)
+	}
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Configuration values are now available.
-	// if data.Endpoint.IsNull() { /* ... */ }
-
-	// Example client configuration for data sources and resources
-	client := http.DefaultClient
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	resp.ResourceData = config
+	resp.DataSourceData = config
 }
 
-func (p *ScaffoldingProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{
-		NewExampleResource,
-	}
-}
-
-func (p *ScaffoldingProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+// DataSources defines the data sources implemented in the provider.
+func (p *aznameProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewExampleDataSource,
+		AzNameDataSource,
 	}
 }
 
-func (p *ScaffoldingProvider) Functions(ctx context.Context) []func() function.Function {
-	return []func() function.Function{
-		NewExampleFunction,
-	}
-}
-
-func New(version string) func() provider.Provider {
-	return func() provider.Provider {
-		return &ScaffoldingProvider{
-			version: version,
-		}
-	}
+// Resources defines the resources implemented in the provider.
+func (p *aznameProvider) Resources(_ context.Context) []func() resource.Resource {
+	return nil
 }
