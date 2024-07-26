@@ -50,7 +50,8 @@ func (r CliNameFunction) Run(ctx context.Context, req function.RunRequest, resp 
 
 	region, err := regions.GetRegionByAnyName(inputRegion)
 	if err != nil {
-		resp.Error = function.NewFuncError(fmt.Sprintf("region not found: %s", inputRegion))
+		resp.Error = function.NewArgumentFuncError(0, fmt.Sprintf("region not found: %s", inputRegion))
+		return
 	}
 
 	resp.Error = function.ConcatFuncErrors(resp.Result.Set(ctx, region.CliName))

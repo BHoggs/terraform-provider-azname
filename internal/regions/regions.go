@@ -2,6 +2,7 @@ package regions
 
 import (
 	"errors"
+	"strings"
 )
 
 type region struct {
@@ -97,7 +98,7 @@ var regionsList = []region{
 // GetRegionByShortName returns a region by its short name.
 func GetRegionByShortName(shortName string) (*region, error) {
 	for _, r := range regionsList {
-		if r.ShortName == shortName {
+		if strings.EqualFold(r.ShortName, shortName) {
 			return &r, nil
 		}
 	}
@@ -107,7 +108,7 @@ func GetRegionByShortName(shortName string) (*region, error) {
 // GetRegionByCliName returns a region by its CLI name.
 func GetRegionByCliName(cliName string) (*region, error) {
 	for _, r := range regionsList {
-		if r.CliName == cliName {
+		if strings.EqualFold(r.CliName, cliName) {
 			return &r, nil
 		}
 	}
@@ -117,7 +118,7 @@ func GetRegionByCliName(cliName string) (*region, error) {
 // GetRegionByFullName returns a region by its full name.
 func GetRegionByFullName(fullName string) (*region, error) {
 	for _, r := range regionsList {
-		if r.FullName == fullName {
+		if strings.EqualFold(r.FullName, fullName) {
 			return &r, nil
 		}
 	}

@@ -19,7 +19,7 @@ func TestCliNameFunction_Known(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: providerConfig + `
 				output "test" {
 					value = provider::azname::region_cli_name("Australia East")
 				}
@@ -40,7 +40,7 @@ func TestCliNameFunction_Null(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: providerConfig + `
 				output "test" {
 					value = provider::azname::region_cli_name(null)
 				}
@@ -60,7 +60,7 @@ func TestCliNameFunction_Unknown(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: providerConfig + `
 				resource "terraform_data" "test" {
 					input = "testvalue"
 				}
