@@ -10,4 +10,12 @@ provider "azname" {
   random_length = 3
 }
 
-data "azname_name" "example" {}
+data "azname_name" "example" {
+  name        = "test"
+  environment = "tst"
+  resource_type = "test"
+}
+
+output "test_region" {
+  value = provider::azname::region_cli_name("Australia East")
+}
