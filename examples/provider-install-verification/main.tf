@@ -11,9 +11,15 @@ provider "azname" {
 }
 
 data "azname_name" "example" {
-  name        = "test"
-  environment = "tst"
-  resource_type = "test"
+  name          = "test"
+  environment   = "tst"
+  resource_type = "azurerm_resource_group"
+  location      = "Australia East"
+  #custom_name   = "mycustomname"
+}
+
+output "name" {
+  value = data.azname_name.example.result
 }
 
 output "test_region" {

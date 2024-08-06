@@ -1,7 +1,7 @@
 default: help
 
 # Run acceptance tests
-.PHONY: help
+.PHONY: help testacc docs
 help:
 	@echo "Usage: make <target>"
 	@echo ""

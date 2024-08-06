@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
-	"math/rand/v2"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -108,33 +106,45 @@ func (d *aznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 
 func (d *aznameDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state aznameDataSourceModel
+	var result string
 
 	config := *d.config
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
-	var rng *rand.Rand
-	if !state.RandomSeed.IsNull() {
-		seed := uint64(state.RandomSeed.ValueInt64())
-		rng = rand.New(rand.NewPCG(seed, seed))
+
+	// If a custom_name is provided, use that as the result
+	if !state.CustomName.IsNull() {
+		result = state.CustomName.ValueString()
 	} else {
-		rng = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
+		res, diags := generateName(ctx, state, config)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		result = res
 	}
 
-	// Create and format the random suffix
-	random_suffix := rng.IntN(int(config.RandomLength.ValueInt64()))
-	random_suffix_str := fmt.Sprintf("%0*d", config.RandomLength.ValueInt64(), random_suffix)
+	state.Result = types.StringValue(result)
+	resp.State.Set(ctx, state)
+}
 
-	println(random_suffix_str)
+func convertFromTfList[T any](ctx context.Context, list types.List) ([]T, error) {
+	var result []T
+	elements := list.Elements()
 
-	// Append global and local prefixes and suffixes
-	prefixes := config.Prefixes.Elements()
-	if !state.Prefixes.IsNull() {
-		prefixes = append(prefixes, state.Prefixes.Elements()...)
+	for _, element := range elements {
+		var value T
+		tfValue, err := element.ToTerraformValue(ctx)
+		if err != nil {
+			return nil, err
+		}
+		err = tfValue.As(&value)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, value)
 	}
 
-	suffixes := config.Suffixes.Elements()
-	if !state.Suffixes.IsNull() {
-		suffixes = append(suffixes, state.Suffixes.Elements()...)
-	}
-
+	return result, nil
 }

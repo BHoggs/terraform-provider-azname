@@ -13,6 +13,7 @@ import (
 const providerConfig = `
 provider "azname" {
   random_length = 3
+  prefixes      = ["azname"]
 }
 `
 

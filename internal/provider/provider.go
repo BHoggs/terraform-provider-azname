@@ -114,36 +114,34 @@ func (p *aznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	template := os.Getenv("AZNAME_TEMPLATE")
-	template_child := os.Getenv("AZNAME_TEMPLATE_CHILD")
-	separator := os.Getenv("AZNAME_SEPARATOR")
-	prefixes := os.Getenv("AZNAME_PREFIX")
-	suffixes := os.Getenv("AZNAME_SUFFIX")
-	clean_output := os.Getenv("AZNAME_CLEAN_OUTPUT")
-	trim_output := os.Getenv("AZNAME_TRIM_OUTPUT")
-	random_length := os.Getenv("AZNAME_RANDOM_LENGTH")
-	instance_length := os.Getenv("AZNAME_INSTANCE_LENGTH")
-
-	// Set defaults if the environment variables are not set.
-	if template == "" {
+	template, ok := os.LookupEnv("AZNAME_TEMPLATE")
+	if !ok {
 		template = "{prefix}~{resource_type}~{workload}~{environment}~{service}~{location}{instance}{rand}~{suffix}"
 	}
-	if template_child == "" {
+	template_child, ok := os.LookupEnv("AZNAME_TEMPLATE_CHILD")
+	if !ok {
 		template_child = "{parent_name}~{resource_type}{instance}~{rand}"
 	}
-	if separator == "" {
+	separator, ok := os.LookupEnv("AZNAME_SEPARATOR")
+	if !ok {
 		separator = "-"
 	}
-	if clean_output == "" {
+	prefixes := os.Getenv("AZNAME_PREFIX")
+	suffixes := os.Getenv("AZNAME_SUFFIX")
+	clean_output, ok := os.LookupEnv("AZNAME_CLEAN_OUTPUT")
+	if !ok {
 		clean_output = "1"
 	}
-	if trim_output == "" {
+	trim_output, ok := os.LookupEnv("AZNAME_TRIM_OUTPUT")
+	if !ok {
 		trim_output = "1"
 	}
-	if random_length == "" {
+	random_length, ok := os.LookupEnv("AZNAME_RANDOM_LENGTH")
+	if !ok {
 		random_length = "3"
 	}
-	if instance_length == "" {
+	instance_length, ok := os.LookupEnv("AZNAME_INSTANCE_LENGTH")
+	if !ok {
 		instance_length = "3"
 	}
 
@@ -219,5 +217,7 @@ func (p *aznameProvider) Resources(_ context.Context) []func() resource.Resource
 func (p *aznameProvider) Functions(_ context.Context) []func() function.Function {
 	return []func() function.Function{
 		NewCliNameFunction,
+		NewFullNameFunction,
+		NewShortNameFunction,
 	}
 }
