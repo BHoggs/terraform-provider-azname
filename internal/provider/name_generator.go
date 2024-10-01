@@ -20,7 +20,7 @@ func generateName(ctx context.Context, state aznameDataSourceModel, config aznam
 
 	resourceType, ok := resources.ResourceDefinitions[state.ResourceType.ValueString()]
 	if !ok {
-		diags.AddAttributeError(path.Root("resource_type"), "unknown resource type", fmt.Sprintf("Unkown resource type: %s", state.ResourceType.ValueString()))
+		diags.AddAttributeError(path.Root("resource_type"), "unknown resource type", fmt.Sprintf("Unknown resource type: %s", state.ResourceType.ValueString()))
 		return "", diags
 	}
 
@@ -69,7 +69,7 @@ func generateName(ctx context.Context, state aznameDataSourceModel, config aznam
 
 	regionShortName, err := regions.GetRegionByAnyName(state.Location.ValueString())
 	if err != nil {
-		diags.AddAttributeError(path.Root("location"), "unknown region", fmt.Sprintf("Unkown region: %s", state.Location.ValueString()))
+		diags.AddAttributeError(path.Root("location"), "unknown region", fmt.Sprintf("Unknown region: %s", state.Location.ValueString()))
 		return "", diags
 	}
 

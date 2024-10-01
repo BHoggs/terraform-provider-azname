@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -46,7 +47,17 @@ func (d *aznameDataSource) Configure(ctx context.Context, req datasource.Configu
 		return
 	}
 
-	d.config = req.ProviderData.(*aznameProviderModel)
+	config, ok := req.ProviderData.(*aznameProviderModel)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configure Type",
+			fmt.Sprintf("Expected *aznameProviderModel, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	d.config = config
 }
 
 func (d *aznameDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
