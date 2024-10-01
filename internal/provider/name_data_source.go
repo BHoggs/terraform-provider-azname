@@ -122,40 +122,24 @@ func (d *aznameDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config := *d.config
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// If a custom_name is provided, use that as the result
 	if !state.CustomName.IsNull() {
-		result = state.CustomName.ValueString()
-	} else {
-		res, diags := generateName(ctx, state, config)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		result = res
+		state.Result = state.CustomName
+		resp.State.Set(ctx, state)
+
+		return
+	}
+
+	result, diags := generateName(ctx, state, config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	state.Result = types.StringValue(result)
 	resp.State.Set(ctx, state)
-}
-
-func convertFromTfList[T any](ctx context.Context, list types.List) ([]T, error) {
-	var result []T
-	elements := list.Elements()
-
-	for _, element := range elements {
-		var value T
-		tfValue, err := element.ToTerraformValue(ctx)
-		if err != nil {
-			return nil, err
-		}
-		err = tfValue.As(&value)
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, value)
-	}
-
-	return result, nil
 }

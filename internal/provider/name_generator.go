@@ -13,7 +13,30 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+// Helper function to convert a Terraform list to a Go slice.
+func convertFromTfList[T any](ctx context.Context, list types.List) ([]T, error) {
+	var result []T
+	elements := list.Elements()
+
+	for _, element := range elements {
+		var value T
+		tfValue, err := element.ToTerraformValue(ctx)
+		if err != nil {
+			return nil, err
+		}
+		err = tfValue.As(&value)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, value)
+	}
+
+	return result, nil
+}
 
 func generateName(ctx context.Context, state aznameDataSourceModel, config aznameProviderModel) (string, diag.Diagnostics) {
 	var diags diag.Diagnostics
