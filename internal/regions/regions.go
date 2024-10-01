@@ -59,7 +59,7 @@ var regionsList = []region{
 	{"koreacentral", "Korea Central", "krc", stringPtr("koreasouth")},
 	{"koreasouth", "Korea South", "krs", stringPtr("koreacentral")},
 	{"mexicocentral", "Mexico Central", "mexc", nil},
-	{"newzealand", "New Zealand", "nz", nil},
+	{"newzealandnorth", "New Zealand North", "nzn", nil},
 	{"northcentralus", "North Central US", "ncus", stringPtr("southcentralus")},
 	{"northeurope", "North Europe", "ne", stringPtr("westeurope")},
 	{"norway", "Norway", "nor", nil},
