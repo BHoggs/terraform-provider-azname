@@ -1,6 +1,8 @@
 module terraform-provider-azname
 
-go 1.22
+go 1.22.0
+
+toolchain go1.23.1
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.19.4
