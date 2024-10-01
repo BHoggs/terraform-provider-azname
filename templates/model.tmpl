@@ -6,7 +6,7 @@
 
 package resources
 
-// ResourceDefinitions are a map of difinitions for the resources supported
+// ResourceDefinitions are a map of definitions for the resources supported
 var ResourceDefinitions = map[string]ResourceStructure{
     {{- range .ResourceStructures }}
     "{{.ResourceTypeName}}": {"{{.ResourceTypeName}}", "{{.CafPrefix}}", {{.MinLength}}, {{.MaxLength}},  {{.LowerCase}}, {{.RegEx}}, {{.ValidationRegExp}}, {{.Dashes}}, "{{.Scope}}" },
