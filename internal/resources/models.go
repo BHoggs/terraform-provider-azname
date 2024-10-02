@@ -1,5 +1,16 @@
 package resources
 
+import "fmt"
+
+// Looks up a resource definition by its type name
+func GetResourceDefinition(resourceType string) (ResourceStructure, error) {
+	resource, ok := ResourceDefinitions[resourceType]
+	if !ok {
+		return ResourceStructure{}, fmt.Errorf("unknown resource type: %s", resourceType)
+	}
+	return resource, nil
+}
+
 type ResourceStructure struct {
 	// Resource type name
 	ResourceTypeName string `json:"name"`

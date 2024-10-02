@@ -41,9 +41,9 @@ func convertFromTfList[T any](ctx context.Context, list types.List) ([]T, error)
 func generateName(ctx context.Context, state aznameDataSourceModel, config aznameProviderModel) (string, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	resourceType, ok := resources.ResourceDefinitions[state.ResourceType.ValueString()]
-	if !ok {
-		diags.AddAttributeError(path.Root("resource_type"), "unknown resource type", fmt.Sprintf("Unknown resource type: %s", state.ResourceType.ValueString()))
+	resourceType, err := resources.GetResourceDefinition(state.ResourceType.ValueString())
+	if err != nil {
+		diags.AddAttributeError(path.Root("resource_type"), "unknown resource type", err.Error())
 		return "", diags
 	}
 

@@ -38,7 +38,7 @@ func TestNameDataSource(t *testing.T) {
 					`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.azname_name.rg", "result", "unit-rg-test-tst-ae"),
-					resource.TestCheckResourceAttr("data.azname_name.storage", "result", "unitsttesttstae852"),
+					resource.TestCheckResourceAttr("data.azname_name.storage", "result", "unitsttesttstae851"),
 				),
 			},
 		},
