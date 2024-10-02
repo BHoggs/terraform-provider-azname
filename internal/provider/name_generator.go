@@ -57,9 +57,8 @@ func generateName(ctx context.Context, state aznameDataSourceModel, config aznam
 			rng = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 		}
 		randomLength := int(config.RandomLength.ValueInt64())
-		randomSuffix := rng.IntN(int(math.Pow10(randomLength)))
+		randomSuffix := rng.IntN(int(math.Pow10(randomLength) - 1))
 		randomSuffixString = fmt.Sprintf("%0*d", randomLength, randomSuffix)
-
 	}
 
 	prefixes, err := convertFromTfList[string](ctx, config.Prefixes)
