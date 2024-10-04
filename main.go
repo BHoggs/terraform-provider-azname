@@ -13,8 +13,6 @@ import (
 	"terraform-provider-azname/internal/provider"
 )
 
-//go:generate go run gen.go
-
 var (
 	// these will be set by the goreleaser configuration
 	// to appropriate values for the compiled binary.

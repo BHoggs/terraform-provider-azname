@@ -1,5 +1,8 @@
 package resources
 
+// Running go generate will generate the models_generated.go file
+//go:generate go run gen.go
+
 import "fmt"
 
 // Looks up a resource definition by its type name

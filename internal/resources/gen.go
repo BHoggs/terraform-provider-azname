@@ -1,7 +1,6 @@
 // The following directive is necessary to make the package coherent:
 
 //go:build ignore
-// +build ignore
 
 // This program generates models_generated.go. It can be invoked by running
 // go generate
@@ -107,7 +106,7 @@ func main() {
 		}
 	}
 
-	modelsFile, err := os.OpenFile(path.Join(wd, "internal/resources/models_generated.go"), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	modelsFile, err := os.OpenFile(path.Join(wd, "models_generated.go"), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
