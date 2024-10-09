@@ -5,7 +5,7 @@ package resources
 
 import "fmt"
 
-// Looks up a resource definition by its type name
+// Looks up a resource definition by its type name.
 func GetResourceDefinition(resourceType string) (ResourceStructure, error) {
 	resource, ok := ResourceDefinitions[resourceType]
 	if !ok {
