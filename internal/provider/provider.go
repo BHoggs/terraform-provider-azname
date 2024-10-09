@@ -205,13 +205,15 @@ func (p *AznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 // DataSources defines the data sources implemented in the provider.
 func (p *AznameProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		AzNameDataSource,
+		NewAzNameDataSource,
 	}
 }
 
 // Resources defines the resources implemented in the provider.
 func (p *AznameProvider) Resources(_ context.Context) []func() resource.Resource {
-	return nil
+	return []func() resource.Resource{
+		NewAznameResource,
+	}
 }
 
 func (p *AznameProvider) Functions(_ context.Context) []func() function.Function {

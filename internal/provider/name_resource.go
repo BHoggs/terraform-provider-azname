@@ -32,6 +32,7 @@ type AznameResource struct {
 
 // These are shared between the resource and data source implementations.
 type AznameNameModel struct {
+	Result       types.String `tfsdk:"result"`
 	Name         types.String `tfsdk:"name"`
 	Environment  types.String `tfsdk:"environment"`
 	CustomName   types.String `tfsdk:"custom_name"`
@@ -44,7 +45,6 @@ type AznameNameModel struct {
 	Instance     types.Int64  `tfsdk:"instance"`
 	Service      types.String `tfsdk:"service"`
 	ParentName   types.String `tfsdk:"parent_name"`
-	Result       types.String `tfsdk:"result"`
 }
 
 type AznameResourceModel struct {
@@ -62,6 +62,12 @@ func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest,
 		MarkdownDescription: "Example resource",
 
 		Attributes: map[string]schema.Attribute{
+			"result": schema.StringAttribute{
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"name": schema.StringAttribute{
 				Required: true,
 			},
@@ -103,12 +109,6 @@ func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"parent_name": schema.StringAttribute{
 				Optional: true,
 			},
-			"result": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 			"triggers": schema.MapAttribute{
 				Optional:    true,
 				ElementType: types.StringType,
@@ -145,7 +145,7 @@ func (r *AznameResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	config := *r.config
 
-	resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -175,7 +175,7 @@ func (r *AznameResource) Read(ctx context.Context, req resource.ReadRequest, res
 func (r *AznameResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var state AznameResourceModel
 
-	resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

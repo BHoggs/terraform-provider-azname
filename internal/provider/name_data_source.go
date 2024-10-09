@@ -16,7 +16,7 @@ var (
 	_ datasource.DataSourceWithConfigure = &AznameDataSource{}
 )
 
-func AzNameDataSource() datasource.DataSource {
+func NewAzNameDataSource() datasource.DataSource {
 	return &AznameDataSource{}
 }
 
@@ -55,6 +55,9 @@ func (d *AznameDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 func (d *AznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"result": schema.StringAttribute{
+				Computed: true,
+			},
 			"name": schema.StringAttribute{
 				Required: true,
 			},
@@ -95,9 +98,6 @@ func (d *AznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 			},
 			"parent_name": schema.StringAttribute{
 				Optional: true,
-			},
-			"result": schema.StringAttribute{
-				Computed: true,
 			},
 		},
 	}
