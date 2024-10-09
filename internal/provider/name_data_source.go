@@ -12,46 +12,34 @@ import (
 )
 
 var (
-	_ datasource.DataSource              = &aznameDataSource{}
-	_ datasource.DataSourceWithConfigure = &aznameDataSource{}
+	_ datasource.DataSource              = &AznameDataSource{}
+	_ datasource.DataSourceWithConfigure = &AznameDataSource{}
 )
 
 func AzNameDataSource() datasource.DataSource {
-	return &aznameDataSource{}
+	return &AznameDataSource{}
 }
 
-type aznameDataSource struct {
-	config *aznameProviderModel
+type AznameDataSource struct {
+	config *AznameProviderModel
 }
 
-type aznameDataSourceModel struct {
-	Name         types.String `tfsdk:"name"`
-	Environment  types.String `tfsdk:"environment"`
-	CustomName   types.String `tfsdk:"custom_name"`
-	ResourceType types.String `tfsdk:"resource_type"`
-	Prefixes     types.List   `tfsdk:"prefixes"`
-	Suffixes     types.List   `tfsdk:"suffixes"`
-	Separator    types.String `tfsdk:"separator"`
-	RandomSeed   types.Int64  `tfsdk:"random_seed"`
-	Location     types.String `tfsdk:"location"`
-	Instance     types.Int64  `tfsdk:"instance"`
-	Service      types.String `tfsdk:"service"`
-	ParentName   types.String `tfsdk:"parent_name"`
-	Result       types.String `tfsdk:"result"`
+type AznameDataSourceModel struct {
+	AznameNameModel
 }
 
-func (d *aznameDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *AznameDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Always perform a nil check when handling ProviderData because Terraform
 	// sets that data after it calls the ConfigureProvider RPC.
 	if req.ProviderData == nil {
 		return
 	}
 
-	config, ok := req.ProviderData.(*aznameProviderModel)
+	config, ok := req.ProviderData.(*AznameProviderModel)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *aznameProviderModel, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *AznameProviderModel, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -60,11 +48,11 @@ func (d *aznameDataSource) Configure(ctx context.Context, req datasource.Configu
 	d.config = config
 }
 
-func (d *aznameDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *AznameDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_name"
 }
 
-func (d *aznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *AznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -115,8 +103,8 @@ func (d *aznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 	}
 }
 
-func (d *aznameDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state aznameDataSourceModel
+func (d *AznameDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state AznameDataSourceModel
 	var result string
 
 	config := *d.config
@@ -134,12 +122,12 @@ func (d *aznameDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	result, diags := generateName(ctx, state, config)
+	result, diags := GenerateName(ctx, state.AznameNameModel, config)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	state.Result = types.StringValue(result)
-	resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

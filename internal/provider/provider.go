@@ -20,29 +20,29 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ provider.Provider              = &aznameProvider{}
-	_ provider.ProviderWithFunctions = &aznameProvider{}
+	_ provider.Provider              = &AznameProvider{}
+	_ provider.ProviderWithFunctions = &AznameProvider{}
 )
 
 // New is a helper function to simplify provider server and testing implementation.
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &aznameProvider{
+		return &AznameProvider{
 			version: version,
 		}
 	}
 }
 
-// aznameProvider is the provider implementation.
-type aznameProvider struct {
+// AznameProvider is the provider implementation.
+type AznameProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-// aznameProviderModel maps provider schema data to a Go type.
-type aznameProviderModel struct {
+// AznameProviderModel maps provider schema data to a Go type.
+type AznameProviderModel struct {
 	Template       types.String `tfsdk:"template"`
 	TemplateChild  types.String `tfsdk:"template_child"`
 	Separator      types.String `tfsdk:"separator"`
@@ -55,13 +55,13 @@ type aznameProviderModel struct {
 }
 
 // Metadata returns the provider type name.
-func (p *aznameProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+func (p *AznameProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "azname"
 	resp.Version = p.version
 }
 
 // Schema defines the provider-level schema for configuration data.
-func (p *aznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *AznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"template": schema.StringAttribute{
@@ -106,8 +106,8 @@ func (p *aznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 	}
 }
 
-func (p *aznameProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var config aznameProviderModel
+func (p *AznameProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var config AznameProviderModel
 	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -203,18 +203,18 @@ func (p *aznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 }
 
 // DataSources defines the data sources implemented in the provider.
-func (p *aznameProvider) DataSources(_ context.Context) []func() datasource.DataSource {
+func (p *AznameProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		AzNameDataSource,
 	}
 }
 
 // Resources defines the resources implemented in the provider.
-func (p *aznameProvider) Resources(_ context.Context) []func() resource.Resource {
+func (p *AznameProvider) Resources(_ context.Context) []func() resource.Resource {
 	return nil
 }
 
-func (p *aznameProvider) Functions(_ context.Context) []func() function.Function {
+func (p *AznameProvider) Functions(_ context.Context) []func() function.Function {
 	return []func() function.Function{
 		NewCliNameFunction,
 		NewFullNameFunction,

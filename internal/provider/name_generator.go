@@ -38,7 +38,7 @@ func convertFromTfList[T any](ctx context.Context, list types.List) ([]T, error)
 	return result, nil
 }
 
-func generateName(ctx context.Context, state aznameDataSourceModel, config aznameProviderModel) (string, diag.Diagnostics) {
+func GenerateName(ctx context.Context, state AznameNameModel, config AznameProviderModel) (string, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	resourceType, err := resources.GetResourceDefinition(state.ResourceType.ValueString())
