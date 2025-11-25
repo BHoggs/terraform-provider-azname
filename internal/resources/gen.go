@@ -19,6 +19,18 @@ import (
 	"time"
 )
 
+// OfficialData defines the official Azure CAF documentation attributes for a resource
+type OfficialData struct {
+	// Slug is the official CAF abbreviation for this resource type
+	// Only present for resources that are in the official Azure CAF documentation
+	Slug string `json:"slug,omitempty"`
+	// Resource is the official resource name from Azure CAF documentation
+	Resource string `json:"resource"`
+	// ResourceProviderNamespace is the Azure resource provider namespace from official documentation
+	// Only present for resources that are in the official Azure CAF documentation
+	ResourceProviderNamespace string `json:"resource_provider_namespace,omitempty"`
+}
+
 // ResourceStructure resource definition structure
 type ResourceStructure struct {
 	// Resource type name
@@ -39,6 +51,10 @@ type ResourceStructure struct {
 	Dashes bool `json:"dashes"`
 	// The scope of this name where it needs to be unique
 	Scope string `json:"scope,omitempty"`
+	// OutOfDoc indicates whether this resource is not present in the official Azure CAF documentation
+	OutOfDoc bool `json:"out_of_doc,omitempty"`
+	// Official contains the official Azure CAF documentation attributes for this resource
+	Official OfficialData `json:"official"`
 }
 
 type templateData struct {
@@ -82,18 +98,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Undocumented resource definitions
-	sourceDefinitionsUndocumented, err := os.ReadFile(path.Join(wd, "resourceDefinition_out_of_docs.json"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	var dataUndocumented []ResourceStructure
-	err = json.Unmarshal(sourceDefinitionsUndocumented, &dataUndocumented)
-	if err != nil {
-		log.Fatal(err)
-	}
-	data = append(data, dataUndocumented...)
 
 	sort.SliceStable(data, func(i, j int) bool {
 		return data[i].ResourceTypeName < data[j].ResourceTypeName

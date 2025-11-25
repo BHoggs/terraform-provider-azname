@@ -68,7 +68,17 @@ func (p *AznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 
 This provider helps maintain consistent resource naming across your Azure infrastructure by providing configurable templates
 and functions for generating resource names. It supports both global resources and child resources, with configurable
-separators, random suffixes, and instance numbers.`,
+separators, random suffixes, and instance numbers.
+
+### Why is this provider needed?
+
+When working with Azure, maintaining consistent resource naming is critical. This provider makes it easy to align resource names to organizational standards with minimal input from developers. 
+
+A key advantage of this provider is that generated resource names are **stored in Terraform state**. This means your resource names remain stable even when naming conventions or input parameters change. Since Azure treats resource names as immutable identifiers, simple changes to name generation logic can trigger destructive rebuilds that cascade across your infrastructure. By persisting names in state, this provider protects you from unintended resource recreation and the associated downtime and data loss.
+
+### What about azurecaf_name?
+
+The [azurecaf](https://registry.terraform.io/providers/aztfmod/azurecaf/latest) provider actually inspired the creation of this provider! However I wasn't satisfied with the functionality and ease of use of the azurecaf_name data source. I found that it was not flexible enough for my needs and I wanted to have more control over the naming process. It also does not persist naming in state, which is a key advantage of this provider.`,
 
 		Attributes: map[string]schema.Attribute{
 			"template": schema.StringAttribute{
