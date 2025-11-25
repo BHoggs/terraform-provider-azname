@@ -3,12 +3,17 @@
 page_title: "azname_name Data Source - azname"
 subcategory: ""
 description: |-
-  
+  Data source for generating standardized Azure resource names following naming conventions.
+  This data source uses templates to generate consistent resource names based on inputs like workload name,
+  environment, resource type, and location. It supports both global resources and child resources.
 ---
 
 # azname_name (Data Source)
 
+Data source for generating standardized Azure resource names following naming conventions.
 
+This data source uses templates to generate consistent resource names based on inputs like workload name,
+environment, resource type, and location. It supports both global resources and child resources.
 
 
 
@@ -17,13 +22,13 @@ description: |-
 
 ### Required
 
-- `environment` (String)
-- `name` (String)
-- `resource_type` (String)
+- `environment` (String) The environment name (e.g., dev, test, prod) to use in the resource name.
+- `name` (String) The workload or application name to use in the resource name.
+- `resource_type` (String) The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).
 
 ### Optional
 
-- `custom_name` (String)
+- `custom_name` (String) Override the generated name with a custom value. Useful for legacy or imported resources.
 - `instance` (Number)
 - `location` (String)
 - `parent_name` (String)
@@ -35,4 +40,4 @@ description: |-
 
 ### Read-Only
 
-- `result` (String)
+- `result` (String) The generated resource name following the configured template pattern.

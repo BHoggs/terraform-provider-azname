@@ -18,7 +18,7 @@ resource "azname_name" "web_app" {
   resource_type = "webapp"
   location      = "westus2"
   service       = "web"
-  
+
   # Name will be regenerated if any of these change
   triggers = {
     git_sha = "abc123"
@@ -32,7 +32,7 @@ resource "azname_name" "deployment_slot" {
   environment   = "prod"
   resource_type = "slot"
   parent_name   = azname_name.web_app.result
-  
+
   triggers = {
     parent_name = azname_name.web_app.result
   }

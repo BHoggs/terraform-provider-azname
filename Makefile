@@ -34,7 +34,8 @@ testacc:
 	TF_ACC=1 go test -v -cover -timeout 120m ./...
 
 gendocs:
-	cd tools; go generate ./...
+	terraform fmt -recursive examples/
+	go tool tfplugindocs generate --provider-name azname
 
 genresources:
 	cd internal/resources; go generate ./...

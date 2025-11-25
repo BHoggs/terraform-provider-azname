@@ -3,12 +3,22 @@
 page_title: "azname_name Resource - azname"
 subcategory: ""
 description: |-
-  Example resource
+  Resource for generating standardized Azure resource names following naming conventions.
+  This resource uses templates to generate consistent resource names based on inputs like workload name,
+  environment, resource type, and location. It supports both global resources and child resources.
+  The key difference from the data source version is that this resource version includes a "triggers" map
+  that can be used to force the generation of a new name when specific values change.
 ---
 
 # azname_name (Resource)
 
-Example resource
+Resource for generating standardized Azure resource names following naming conventions.
+
+This resource uses templates to generate consistent resource names based on inputs like workload name,
+environment, resource type, and location. It supports both global resources and child resources.
+
+The key difference from the data source version is that this resource version includes a "triggers" map 
+that can be used to force the generation of a new name when specific values change.
 
 
 
@@ -17,23 +27,23 @@ Example resource
 
 ### Required
 
-- `environment` (String)
-- `name` (String)
-- `resource_type` (String)
+- `environment` (String) The environment name (e.g., dev, test, prod) to use in the resource name.
+- `name` (String) The workload or application name to use in the resource name.
+- `resource_type` (String) The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).
 
 ### Optional
 
-- `custom_name` (String)
-- `instance` (Number)
-- `location` (String)
-- `parent_name` (String)
-- `prefixes` (List of String)
-- `random_seed` (Number)
-- `separator` (String)
-- `service` (String)
-- `suffixes` (List of String)
-- `triggers` (Map of String)
+- `custom_name` (String) Override the generated name with a custom value. Useful for legacy or imported resources.
+- `instance` (Number) Instance number for the resource. Used when deploying multiple instances of the same resource type.
+- `location` (String) Azure region where the resource will be deployed. Will be included in the name if specified in the template.
+- `parent_name` (String) Name of the parent resource. Required when generating names for child resources.
+- `prefixes` (List of String) List of prefixes to prepend to the resource name. These will be joined using the separator character.
+- `random_seed` (Number) Seed value for random suffix generation. Use this to get consistent random values.
+- `separator` (String) Character to use as separator in the resource name. Must be a single character. Defaults to provider's separator setting.
+- `service` (String) Service or component identifier within the workload (e.g., web, api, worker).
+- `suffixes` (List of String) List of suffixes to append to the resource name. These will be joined using the separator character.
+- `triggers` (Map of String) Map of values that should trigger a new name to be generated when changed. Common triggers include version numbers or Git commit hashes.
 
 ### Read-Only
 
-- `result` (String)
+- `result` (String) The generated resource name following the configured template pattern.
