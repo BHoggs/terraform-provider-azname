@@ -29,14 +29,14 @@ environment, resource type, and location. It supports both global resources and 
 ### Optional
 
 - `custom_name` (String) Override the generated name with a custom value. Useful for legacy or imported resources.
-- `instance` (Number)
-- `location` (String)
-- `parent_name` (String)
-- `prefixes` (List of String)
-- `random_seed` (Number)
-- `separator` (String)
-- `service` (String)
-- `suffixes` (List of String)
+- `instance` (Number) Instance number for the resource. Used when deploying multiple instances of the same resource type.
+- `location` (String) Azure region where the resource will be deployed. Will be included in the name if specified in the template.
+- `parent_name` (String) Name of the parent resource. Required when generating names for child resources.
+- `prefixes` (List of String) List of prefixes to prepend to the resource name. These will be joined using the separator character.
+- `random_seed` (Number) Seed value for random suffix generation. Use this to get consistent random values.
+- `separator` (String) Character to use as separator in the resource name. Must be a single character. Defaults to provider's separator setting.
+- `service` (String) Service or component identifier within the workload (e.g., web, api, worker).
+- `suffixes` (List of String) List of suffixes to append to the resource name. These will be joined using the separator character.
 
 ### Read-Only
 

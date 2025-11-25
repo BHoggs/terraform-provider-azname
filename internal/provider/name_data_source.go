@@ -87,33 +87,49 @@ environment, resource type, and location. It supports both global resources and 
 				MarkdownDescription: "The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).",
 			},
 			"prefixes": schema.ListAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+				Optional:            true,
+				ElementType:         types.StringType,
+				Description:         "List of prefixes to prepend to the resource name.",
+				MarkdownDescription: "List of prefixes to prepend to the resource name. These will be joined using the separator character.",
 			},
 			"suffixes": schema.ListAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+				Optional:            true,
+				ElementType:         types.StringType,
+				Description:         "List of suffixes to append to the resource name.",
+				MarkdownDescription: "List of suffixes to append to the resource name. These will be joined using the separator character.",
 			},
 			"separator": schema.StringAttribute{
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(1),
 				},
+				Description:         "Character to use as separator in the resource name. Defaults to provider's separator setting.",
+				MarkdownDescription: "Character to use as separator in the resource name. Must be a single character. Defaults to provider's separator setting.",
 			},
 			"random_seed": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Seed value for random suffix generation. Use this to get consistent random values.",
+				MarkdownDescription: "Seed value for random suffix generation. Use this to get consistent random values.",
 			},
 			"location": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Azure region where the resource will be deployed.",
+				MarkdownDescription: "Azure region where the resource will be deployed. Will be included in the name if specified in the template.",
 			},
 			"instance": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Instance number for the resource. Used when deploying multiple instances.",
+				MarkdownDescription: "Instance number for the resource. Used when deploying multiple instances of the same resource type.",
 			},
 			"service": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Service or component identifier within the workload.",
+				MarkdownDescription: "Service or component identifier within the workload (e.g., web, api, worker).",
 			},
 			"parent_name": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Name of the parent resource for child resources.",
+				MarkdownDescription: "Name of the parent resource. Required when generating names for child resources.",
 			},
 		},
 	}
