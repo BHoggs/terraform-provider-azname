@@ -58,8 +58,13 @@ func (r *AznameResource) Metadata(ctx context.Context, req resource.MetadataRequ
 
 func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Example resource",
+		MarkdownDescription: `Resource for generating standardized Azure resource names following naming conventions.
+
+This resource uses templates to generate consistent resource names based on inputs like workload name,
+environment, resource type, and location. It supports both global resources and child resources.
+
+The key difference from the data source version is that this resource version includes a "triggers" map 
+that can be used to force the generation of a new name when specific values change.`,
 
 		Attributes: map[string]schema.Attribute{
 			"result": schema.StringAttribute{
@@ -67,47 +72,73 @@ func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
+				Description:         "The generated resource name following the configured template pattern.",
+				MarkdownDescription: "The generated resource name following the configured template pattern.",
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				Description:         "The workload or application name to use in the resource name.",
+				MarkdownDescription: "The workload or application name to use in the resource name.",
 			},
 			"environment": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				Description:         "The environment name (e.g., dev, test, prod) to use in the resource name.",
+				MarkdownDescription: "The environment name (e.g., dev, test, prod) to use in the resource name.",
 			},
 			"custom_name": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Override the generated name with a custom value. Useful for legacy or imported resources.",
+				MarkdownDescription: "Override the generated name with a custom value. Useful for legacy or imported resources.",
 			},
 			"resource_type": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				Description:         "The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).",
+				MarkdownDescription: "The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).",
 			},
 			"prefixes": schema.ListAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+				Optional:            true,
+				ElementType:         types.StringType,
+				Description:         "List of prefixes to prepend to the resource name.",
+				MarkdownDescription: "List of prefixes to prepend to the resource name. These will be joined using the separator character.",
 			},
 			"suffixes": schema.ListAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+				Optional:            true,
+				ElementType:         types.StringType,
+				Description:         "List of suffixes to append to the resource name.",
+				MarkdownDescription: "List of suffixes to append to the resource name. These will be joined using the separator character.",
 			},
 			"separator": schema.StringAttribute{
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(1),
 				},
+				Description:         "Character to use as separator in the resource name. Defaults to provider's separator setting.",
+				MarkdownDescription: "Character to use as separator in the resource name. Must be a single character. Defaults to provider's separator setting.",
 			},
 			"random_seed": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Seed value for random suffix generation. Use this to get consistent random values.",
+				MarkdownDescription: "Seed value for random suffix generation. Use this to get consistent random values.",
 			},
 			"location": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Azure region where the resource will be deployed.",
+				MarkdownDescription: "Azure region where the resource will be deployed. Will be included in the name if specified in the template.",
 			},
 			"instance": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Instance number for the resource. Used when deploying multiple instances.",
+				MarkdownDescription: "Instance number for the resource. Used when deploying multiple instances of the same resource type.",
 			},
 			"service": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Service or component identifier within the workload.",
+				MarkdownDescription: "Service or component identifier within the workload (e.g., web, api, worker).",
 			},
 			"parent_name": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Name of the parent resource for child resources.",
+				MarkdownDescription: "Name of the parent resource. Required when generating names for child resources.",
 			},
 			"triggers": schema.MapAttribute{
 				Optional:    true,
@@ -115,6 +146,8 @@ func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				PlanModifiers: []planmodifier.Map{
 					mapplanmodifier.RequiresReplace(),
 				},
+				Description:         "Map of values that should trigger a new name to be generated when changed.",
+				MarkdownDescription: "Map of values that should trigger a new name to be generated when changed. Common triggers include version numbers or Git commit hashes.",
 			},
 		},
 	}

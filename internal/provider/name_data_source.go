@@ -54,21 +54,37 @@ func (d *AznameDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 
 func (d *AznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Data source for generating standardized Azure resource names following naming conventions.",
+		MarkdownDescription: `Data source for generating standardized Azure resource names following naming conventions.
+
+This data source uses templates to generate consistent resource names based on inputs like workload name,
+environment, resource type, and location. It supports both global resources and child resources.`,
+
 		Attributes: map[string]schema.Attribute{
 			"result": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The generated resource name following the configured template pattern.",
+				MarkdownDescription: "The generated resource name following the configured template pattern.",
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				Description:         "The workload or application name to use in the resource name.",
+				MarkdownDescription: "The workload or application name to use in the resource name.",
 			},
 			"environment": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				Description:         "The environment name (e.g., dev, test, prod) to use in the resource name.",
+				MarkdownDescription: "The environment name (e.g., dev, test, prod) to use in the resource name.",
 			},
 			"custom_name": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Override the generated name with a custom value. Useful for legacy or imported resources.",
+				MarkdownDescription: "Override the generated name with a custom value. Useful for legacy or imported resources.",
 			},
 			"resource_type": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				Description:         "The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).",
+				MarkdownDescription: "The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).",
 			},
 			"prefixes": schema.ListAttribute{
 				Optional:    true,

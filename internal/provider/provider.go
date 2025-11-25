@@ -63,41 +63,66 @@ func (p *AznameProvider) Metadata(_ context.Context, _ provider.MetadataRequest,
 // Schema defines the provider-level schema for configuration data.
 func (p *AznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Provider for generating standardized Azure resource names.",
+		MarkdownDescription: `Provider for generating standardized Azure resource names following naming conventions.
+
+This provider helps maintain consistent resource naming across your Azure infrastructure by providing configurable templates
+and functions for generating resource names. It supports both global resources and child resources, with configurable
+separators, random suffixes, and instance numbers.`,
+
 		Attributes: map[string]schema.Attribute{
 			"template": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Global template for resource name generation. Default: {prefix}~{resource_type}~{workload}~{environment}~{service}~{location}{instance}{rand}~{suffix}",
+				MarkdownDescription: "Global template for resource name generation. Uses ~ as a placeholder for the separator character.",
 			},
 			"template_child": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Template for child resource name generation. Default: {parent_name}~{resource_type}{instance}~{rand}",
+				MarkdownDescription: "Template for child resource name generation. Uses ~ as a placeholder for the separator character.",
 			},
 			"separator": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Character to use as separator in resource names. Default: -",
+				MarkdownDescription: "Character to use as separator in resource names. Must be a single character.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(1),
 				},
 			},
 			"prefixes": schema.ListAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+				Optional:            true,
+				ElementType:         types.StringType,
+				Description:         "List of prefixes to prepend to resource names.",
+				MarkdownDescription: "List of prefixes to prepend to resource names. These will be joined using the separator character.",
 			},
 			"suffixes": schema.ListAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+				Optional:            true,
+				ElementType:         types.StringType,
+				Description:         "List of suffixes to append to resource names.",
+				MarkdownDescription: "List of suffixes to append to resource names. These will be joined using the separator character.",
 			},
 			"clean_output": schema.BoolAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Remove special characters from generated names. Default: true",
+				MarkdownDescription: "Remove special characters from generated names to ensure compatibility with Azure naming rules.",
 			},
 			"trim_output": schema.BoolAttribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Trim generated names to fit Azure resource length limits. Default: true",
+				MarkdownDescription: "Trim generated names to fit Azure resource length limits while preserving important parts.",
 			},
 			"random_length": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Length of random suffix to append. Default: 3",
+				MarkdownDescription: "Length of random suffix to append to generated names. Must be between 1 and 6.",
 				Validators: []validator.Int64{
 					int64validator.Between(1, 6),
 				},
 			},
 			"instance_length": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				Description:         "Length of instance number padding. Default: 3",
+				MarkdownDescription: "Length of instance number padding in generated names. Must be between 1 and 6.",
 				Validators: []validator.Int64{
 					int64validator.Between(1, 6),
 				},

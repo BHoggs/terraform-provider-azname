@@ -43,12 +43,13 @@ func (r ShortNameFunction) Metadata(_ context.Context, req function.MetadataRequ
 
 func (r CliNameFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		Summary:             "Azure Region CLI Name",
-		MarkdownDescription: "Gets the Azure CLI name for a region",
+		Summary: "Azure Region CLI Name",
+		MarkdownDescription: `Gets the Azure CLI name for a region. 
+This function takes a region name in any format (full name, short name, or CLI name) and returns the CLI name.`,
 		Parameters: []function.Parameter{
 			function.StringParameter{
 				Name:                "region",
-				MarkdownDescription: "Region full, short, or CLI name",
+				MarkdownDescription: "Region full name (e.g. 'West US 2'), short name (e.g. 'wus2'), or CLI name (e.g. 'westus2')",
 			},
 		},
 		Return: function.StringReturn{},
@@ -57,12 +58,13 @@ func (r CliNameFunction) Definition(_ context.Context, _ function.DefinitionRequ
 
 func (r FullNameFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		Summary:             "Azure Region Full Name",
-		MarkdownDescription: "Gets the Azure full name for a region",
+		Summary: "Azure Region Full Name",
+		MarkdownDescription: `Gets the Azure full name for a region.
+This function takes a region name in any format (full name, short name, or CLI name) and returns the full display name.`,
 		Parameters: []function.Parameter{
 			function.StringParameter{
 				Name:                "region",
-				MarkdownDescription: "Region full, short, or CLI name",
+				MarkdownDescription: "Region full name (e.g. 'West US 2'), short name (e.g. 'wus2'), or CLI name (e.g. 'westus2')",
 			},
 		},
 		Return: function.StringReturn{},
@@ -71,12 +73,13 @@ func (r FullNameFunction) Definition(_ context.Context, _ function.DefinitionReq
 
 func (r ShortNameFunction) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
-		Summary:             "Azure Region Short Name",
-		MarkdownDescription: "Gets a CAF recommended short name for a region",
+		Summary: "Azure Region Short Name",
+		MarkdownDescription: `Gets a CAF recommended short name for a region.
+This function takes a region name in any format (full name, short name, or CLI name) and returns the Cloud Adoption Framework (CAF) recommended short name.`,
 		Parameters: []function.Parameter{
 			function.StringParameter{
 				Name:                "region",
-				MarkdownDescription: "Region full, short, or CLI name",
+				MarkdownDescription: "Region full name (e.g. 'West US 2'), short name (e.g. 'wus2'), or CLI name (e.g. 'westus2')",
 			},
 		},
 		Return: function.StringReturn{},
