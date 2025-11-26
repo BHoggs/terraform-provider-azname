@@ -89,11 +89,16 @@ func GenerateName(ctx context.Context, state AznameNameModel, config AznameProvi
 		}
 	}
 
+	location := state.Location.ValueString()
+	if state.Location.IsNull() || state.Location.ValueString() == "" {
+		location = config.Location.ValueString()
+	}
+
 	var regionShortName string
-	if !state.Location.IsNull() && state.Location.ValueString() != "" {
-		region, err := regions.GetRegionByAnyName(state.Location.ValueString())
+	if location != "" {
+		region, err := regions.GetRegionByAnyName(location)
 		if err != nil {
-			diags.AddAttributeError(path.Root("location"), "unknown region", fmt.Sprintf("Unknown region: %s", state.Location.ValueString()))
+			diags.AddAttributeError(path.Root("location"), "unknown region", fmt.Sprintf("Unknown region: %s", location))
 			return "", diags
 		}
 		regionShortName = region.ShortName

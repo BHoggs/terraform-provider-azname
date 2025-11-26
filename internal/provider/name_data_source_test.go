@@ -119,3 +119,81 @@ func TestNameDataSourceWithProviderEnvironment(t *testing.T) {
 		},
 	})
 }
+
+func TestNameDataSourceWithProviderLocation(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Test provider-level location configuration
+			{
+				Config: `
+					provider "azname" {
+						random_length = 3
+						location      = "Australia East"
+					}
+					data "azname_name" "rg" {
+						name          = "myapp"
+						environment   = "prod"
+						resource_type = "azurerm_resource_group"
+					}
+					`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.azname_name.rg", "result", "rg-myapp-prod-ae"),
+				),
+			},
+			// Test resource-level override of provider location
+			{
+				Config: `
+					provider "azname" {
+						random_length = 3
+						location      = "Australia East"
+					}
+					data "azname_name" "rg" {
+						name          = "myapp"
+						environment   = "prod"
+						resource_type = "azurerm_resource_group"
+						location      = "West US"
+					}
+					`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.azname_name.rg", "result", "rg-myapp-prod-wus"),
+				),
+			},
+			// Test provider-level location with both environment and location at provider level
+			{
+				Config: `
+					provider "azname" {
+						random_length = 3
+						environment   = "dev"
+						location      = "East US 2"
+					}
+					data "azname_name" "storage" {
+						name          = "myapp"
+						resource_type = "azurerm_storage_account"
+						random_seed   = 789
+					}
+					`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.azname_name.storage", "result", "stmyappdeveus2474"),
+				),
+			},
+			// Test with no location at either level - should omit location from name
+			{
+				Config: `
+					provider "azname" {
+						random_length = 3
+					}
+					data "azname_name" "rg" {
+						name          = "myapp"
+						environment   = "prod"
+						resource_type = "azurerm_resource_group"
+					}
+					`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.azname_name.rg", "result", "rg-myapp-prod"),
+				),
+			},
+		},
+	})
+}

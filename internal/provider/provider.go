@@ -53,6 +53,7 @@ type AznameProviderModel struct {
 	RandomLength   types.Int64  `tfsdk:"random_length"`
 	InstanceLength types.Int64  `tfsdk:"instance_length"`
 	Environment    types.String `tfsdk:"environment"`
+	Location       types.String `tfsdk:"location"`
 }
 
 // Metadata returns the provider type name.
@@ -128,6 +129,11 @@ func (p *AznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Description:         "Default environment name for all resources. Default: empty",
 				MarkdownDescription: "Default environment name (e.g., dev, test, prod) to use in resource names. Can be overridden at resource/data source level. Can be set via `AZNAME_ENVIRONMENT` environment variable.",
 			},
+			"location": schema.StringAttribute{
+				Optional:            true,
+				Description:         "Default location for all resources. Default: empty",
+				MarkdownDescription: "Default location (e.g., eastus, westeurope) to use in resource names. Can be overridden at resource/data source level. Can be set via `AZNAME_LOCATION` environment variable.",
+			},
 		},
 	}
 }
@@ -173,6 +179,10 @@ func (p *AznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	environment, ok := os.LookupEnv("AZNAME_ENVIRONMENT")
 	if !ok {
 		environment = ""
+	}
+	location, ok := os.LookupEnv("AZNAME_LOCATION")
+	if !ok {
+		location = ""
 	}
 
 	// Check for required attributes, and set defaults.
@@ -225,6 +235,9 @@ func (p *AznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if config.Environment.IsNull() {
 		config.Environment = types.StringValue(environment)
+	}
+	if config.Location.IsNull() {
+		config.Location = types.StringValue(location)
 	}
 
 	if resp.Diagnostics.HasError() {
