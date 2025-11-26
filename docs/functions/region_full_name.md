@@ -17,9 +17,13 @@ This function takes a region name in any format (full name, short name, or CLI n
 terraform {
   required_providers {
     azname = {
-      source = "registry.terraform.io/BHoggs/azname"
+      source = "BHoggs/azname"
     }
   }
+}
+
+provider "azname" {
+  environment = "prod"
 }
 
 # Convert Azure region CLI name to full display name
@@ -37,8 +41,7 @@ output "full_name_from_short" {
 # Common use case: displaying region names in outputs or UI
 resource "azname_name" "example" {
   name          = "myapp"
-  environment   = "prod"
-  resource_type = "rg"
+  resource_type = "azurerm_resource_group"
   location      = "westus2"
 }
 

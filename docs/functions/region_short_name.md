@@ -17,7 +17,7 @@ This function takes a region name in any format (full name, short name, or CLI n
 terraform {
   required_providers {
     azname = {
-      source = "registry.terraform.io/BHoggs/azname"
+      source = "BHoggs/azname"
     }
   }
 }

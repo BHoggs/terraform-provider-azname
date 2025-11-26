@@ -1,14 +1,15 @@
 terraform {
   required_providers {
     azname = {
-      source = "registry.terraform.io/BHoggs/azname"
+      source = "BHoggs/azname"
     }
   }
 }
 
 # Provider configuration with global settings
-# These settings (separator, random_length, clean_output, etc.) apply to all data sources
+# These settings (separator, random_length, clean_output, environment, etc.) apply to all data sources
 provider "azname" {
+  environment   = "prod"
   random_length = 4
   separator     = "-"
   clean_output  = true
@@ -16,11 +17,11 @@ provider "azname" {
 
 # Basic resource name generation using data source
 # Data sources are useful for generating names without managing state
-# Required attributes: name, environment, resource_type
+# Required attributes: name, resource_type
+# Environment is inherited from provider configuration
 data "azname_name" "resource_group" {
   name          = "myapp"
-  environment   = "prod"
-  resource_type = "rg"
+  resource_type = "azurerm_resource_group"
   location      = "westus2" # Resource-specific attribute
 }
 
@@ -30,8 +31,7 @@ data "azname_name" "resource_group" {
 # Useful when you need to reference existing resources with specific names
 data "azname_name" "legacy_storage" {
   name          = "myapp"
-  environment   = "prod"
-  resource_type = "st"
+  resource_type = "azurerm_storage_account"
   custom_name   = "legacystorage123"
 }
 
@@ -41,8 +41,7 @@ data "azname_name" "legacy_storage" {
 # Demonstrates hierarchical naming for related resources
 data "azname_name" "container" {
   name          = "images"
-  environment   = "prod"
-  resource_type = "container"
+  resource_type = "azurerm_storage_container"
   parent_name   = data.azname_name.legacy_storage.result
   service       = "blob" # Resource-specific attribute
 }
