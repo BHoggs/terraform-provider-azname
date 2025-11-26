@@ -89,10 +89,14 @@ func GenerateName(ctx context.Context, state AznameNameModel, config AznameProvi
 		}
 	}
 
-	regionShortName, err := regions.GetRegionByAnyName(state.Location.ValueString())
-	if err != nil {
-		diags.AddAttributeError(path.Root("location"), "unknown region", fmt.Sprintf("Unknown region: %s", state.Location.ValueString()))
-		return "", diags
+	var regionShortName string
+	if !state.Location.IsNull() && state.Location.ValueString() != "" {
+		region, err := regions.GetRegionByAnyName(state.Location.ValueString())
+		if err != nil {
+			diags.AddAttributeError(path.Root("location"), "unknown region", fmt.Sprintf("Unknown region: %s", state.Location.ValueString()))
+			return "", diags
+		}
+		regionShortName = region.ShortName
 	}
 
 	var instanceString string
@@ -112,7 +116,7 @@ func GenerateName(ctx context.Context, state AznameNameModel, config AznameProvi
 		"{workload}", state.Name.ValueString(),
 		"{service}", state.Service.ValueString(),
 		"{environment}", environment,
-		"{location}", regionShortName.ShortName,
+		"{location}", regionShortName,
 		"{suffix}", strings.Join(suffixes, "~"),
 		"{instance}", instanceString,
 		"{rand}", randomSuffixString,
