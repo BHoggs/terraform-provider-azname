@@ -52,6 +52,7 @@ type AznameProviderModel struct {
 	TrimOutput     types.Bool   `tfsdk:"trim_output"`
 	RandomLength   types.Int64  `tfsdk:"random_length"`
 	InstanceLength types.Int64  `tfsdk:"instance_length"`
+	Environment    types.String `tfsdk:"environment"`
 }
 
 // Metadata returns the provider type name.
@@ -69,17 +70,17 @@ func (p *AznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 			"template": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Global template for resource name generation. Default: {prefix}~{resource_type}~{workload}~{environment}~{service}~{location}{instance}{rand}~{suffix}",
-				MarkdownDescription: "Global template for resource name generation. Uses ~ as a placeholder for the separator character.",
+				MarkdownDescription: "Global template for resource name generation. Uses ~ as a placeholder for the separator character. Can be set via `AZNAME_TEMPLATE` environment variable.",
 			},
 			"template_child": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Template for child resource name generation. Default: {parent_name}~{resource_type}{instance}~{rand}",
-				MarkdownDescription: "Template for child resource name generation. Uses ~ as a placeholder for the separator character.",
+				MarkdownDescription: "Template for child resource name generation. Uses ~ as a placeholder for the separator character. Can be set via `AZNAME_TEMPLATE_CHILD` environment variable.",
 			},
 			"separator": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Character to use as separator in resource names. Default: -",
-				MarkdownDescription: "Character to use as separator in resource names. Must be a single character.",
+				MarkdownDescription: "Character to use as separator in resource names. Must be a single character. Can be set via `AZNAME_SEPARATOR` environment variable.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(1),
 				},
@@ -88,28 +89,28 @@ func (p *AznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Optional:            true,
 				ElementType:         types.StringType,
 				Description:         "List of prefixes to prepend to resource names.",
-				MarkdownDescription: "List of prefixes to prepend to resource names. These will be joined using the separator character.",
+				MarkdownDescription: "List of prefixes to prepend to resource names. These will be joined using the separator character. Can be set via `AZNAME_PREFIX` environment variable (comma-separated).",
 			},
 			"suffixes": schema.ListAttribute{
 				Optional:            true,
 				ElementType:         types.StringType,
 				Description:         "List of suffixes to append to resource names.",
-				MarkdownDescription: "List of suffixes to append to resource names. These will be joined using the separator character.",
+				MarkdownDescription: "List of suffixes to append to resource names. These will be joined using the separator character. Can be set via `AZNAME_SUFFIX` environment variable (comma-separated).",
 			},
 			"clean_output": schema.BoolAttribute{
 				Optional:            true,
 				Description:         "Remove special characters from generated names. Default: true",
-				MarkdownDescription: "Remove special characters from generated names to ensure compatibility with Azure naming rules.",
+				MarkdownDescription: "Remove special characters from generated names to ensure compatibility with Azure naming rules. Can be set via `AZNAME_CLEAN_OUTPUT` environment variable (1 for true, 0 for false).",
 			},
 			"trim_output": schema.BoolAttribute{
 				Optional:            true,
 				Description:         "Trim generated names to fit Azure resource length limits. Default: true",
-				MarkdownDescription: "Trim generated names to fit Azure resource length limits while preserving important parts.",
+				MarkdownDescription: "Trim generated names to fit Azure resource length limits while preserving important parts. Can be set via `AZNAME_TRIM_OUTPUT` environment variable (1 for true, 0 for false).",
 			},
 			"random_length": schema.Int64Attribute{
 				Optional:            true,
 				Description:         "Length of random suffix to append. Default: 3",
-				MarkdownDescription: "Length of random suffix to append to generated names. Must be between 1 and 6.",
+				MarkdownDescription: "Length of random suffix to append to generated names. Must be between 1 and 6. Can be set via `AZNAME_RANDOM_LENGTH` environment variable.",
 				Validators: []validator.Int64{
 					int64validator.Between(1, 6),
 				},
@@ -117,10 +118,15 @@ func (p *AznameProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 			"instance_length": schema.Int64Attribute{
 				Optional:            true,
 				Description:         "Length of instance number padding. Default: 3",
-				MarkdownDescription: "Length of instance number padding in generated names. Must be between 1 and 6.",
+				MarkdownDescription: "Length of instance number padding in generated names. Must be between 1 and 6. Can be set via `AZNAME_INSTANCE_LENGTH` environment variable.",
 				Validators: []validator.Int64{
 					int64validator.Between(1, 6),
 				},
+			},
+			"environment": schema.StringAttribute{
+				Optional:            true,
+				Description:         "Default environment name for all resources. Default: empty",
+				MarkdownDescription: "Default environment name (e.g., dev, test, prod) to use in resource names. Can be overridden at resource/data source level. Can be set via `AZNAME_ENVIRONMENT` environment variable.",
 			},
 		},
 	}
@@ -163,6 +169,10 @@ func (p *AznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	instance_length, ok := os.LookupEnv("AZNAME_INSTANCE_LENGTH")
 	if !ok {
 		instance_length = "3"
+	}
+	environment, ok := os.LookupEnv("AZNAME_ENVIRONMENT")
+	if !ok {
+		environment = ""
 	}
 
 	// Check for required attributes, and set defaults.
@@ -212,6 +222,9 @@ func (p *AznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			resp.Diagnostics.AddError("Invalid value for AZNAME_INSTANCE_LENGTH", "The value must be a number between 1 and 6")
 		}
 		config.InstanceLength = types.Int64Value(instanceLength)
+	}
+	if config.Environment.IsNull() {
+		config.Environment = types.StringValue(environment)
 	}
 
 	if resp.Diagnostics.HasError() {

@@ -77,12 +77,13 @@ provider "azname" {
 
 ### Optional
 
-- `clean_output` (Boolean) Remove special characters from generated names to ensure compatibility with Azure naming rules.
-- `instance_length` (Number) Length of instance number padding in generated names. Must be between 1 and 6.
-- `prefixes` (List of String) List of prefixes to prepend to resource names. These will be joined using the separator character.
-- `random_length` (Number) Length of random suffix to append to generated names. Must be between 1 and 6.
-- `separator` (String) Character to use as separator in resource names. Must be a single character.
-- `suffixes` (List of String) List of suffixes to append to resource names. These will be joined using the separator character.
-- `template` (String) Global template for resource name generation. Uses ~ as a placeholder for the separator character.
-- `template_child` (String) Template for child resource name generation. Uses ~ as a placeholder for the separator character.
-- `trim_output` (Boolean) Trim generated names to fit Azure resource length limits while preserving important parts.
+- `clean_output` (Boolean) Remove special characters from generated names to ensure compatibility with Azure naming rules. Can be set via `AZNAME_CLEAN_OUTPUT` environment variable (1 for true, 0 for false).
+- `environment` (String) Default environment name (e.g., dev, test, prod) to use in resource names. Can be overridden at resource/data source level. Can be set via `AZNAME_ENVIRONMENT` environment variable.
+- `instance_length` (Number) Length of instance number padding in generated names. Must be between 1 and 6. Can be set via `AZNAME_INSTANCE_LENGTH` environment variable.
+- `prefixes` (List of String) List of prefixes to prepend to resource names. These will be joined using the separator character. Can be set via `AZNAME_PREFIX` environment variable (comma-separated).
+- `random_length` (Number) Length of random suffix to append to generated names. Must be between 1 and 6. Can be set via `AZNAME_RANDOM_LENGTH` environment variable.
+- `separator` (String) Character to use as separator in resource names. Must be a single character. Can be set via `AZNAME_SEPARATOR` environment variable.
+- `suffixes` (List of String) List of suffixes to append to resource names. These will be joined using the separator character. Can be set via `AZNAME_SUFFIX` environment variable (comma-separated).
+- `template` (String) Global template for resource name generation. Uses ~ as a placeholder for the separator character. Can be set via `AZNAME_TEMPLATE` environment variable.
+- `template_child` (String) Template for child resource name generation. Uses ~ as a placeholder for the separator character. Can be set via `AZNAME_TEMPLATE_CHILD` environment variable.
+- `trim_output` (Boolean) Trim generated names to fit Azure resource length limits while preserving important parts. Can be set via `AZNAME_TRIM_OUTPUT` environment variable (1 for true, 0 for false).

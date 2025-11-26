@@ -100,13 +100,13 @@ resource "azname_name" "special_storage" {
 
 ### Required
 
-- `environment` (String) The environment name (e.g., dev, test, prod) to use in the resource name.
 - `name` (String) The workload or application name to use in the resource name.
 - `resource_type` (String) The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).
 
 ### Optional
 
 - `custom_name` (String) Override the generated name with a custom value. Useful for legacy or imported resources.
+- `environment` (String) The environment name (e.g., dev, test, prod) to use in the resource name. Defaults to provider-level environment if not set.
 - `instance` (Number) Instance number for the resource. Used when deploying multiple instances of the same resource type.
 - `location` (String) Azure region where the resource will be deployed. Will be included in the name if specified in the template.
 - `parent_name` (String) Name of the parent resource. Required when generating names for child resources.

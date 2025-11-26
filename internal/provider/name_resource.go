@@ -75,9 +75,9 @@ func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				MarkdownDescription: "The workload or application name to use in the resource name.",
 			},
 			"environment": schema.StringAttribute{
-				Required:            true,
+				Optional:            true,
 				Description:         "The environment name (e.g., dev, test, prod) to use in the resource name.",
-				MarkdownDescription: "The environment name (e.g., dev, test, prod) to use in the resource name.",
+				MarkdownDescription: "The environment name (e.g., dev, test, prod) to use in the resource name. Defaults to provider-level environment if not set.",
 			},
 			"custom_name": schema.StringAttribute{
 				Optional:            true,

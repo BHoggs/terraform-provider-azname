@@ -100,13 +100,18 @@ func GenerateName(ctx context.Context, state AznameNameModel, config AznameProvi
 		instanceString = fmt.Sprintf("%0*d", config.InstanceLength.ValueInt64(), state.Instance.ValueInt64())
 	}
 
+	environment := state.Environment.ValueString()
+	if state.Environment.IsNull() || state.Environment.ValueString() == "" {
+		environment = config.Environment.ValueString()
+	}
+
 	replacer := strings.NewReplacer(
 		"{prefix}", strings.Join(prefixes, "~"),
 		"{parent_name}", state.ParentName.ValueString(),
 		"{resource_type}", resourceType.CafPrefix,
 		"{workload}", state.Name.ValueString(),
 		"{service}", state.Service.ValueString(),
-		"{environment}", state.Environment.ValueString(),
+		"{environment}", environment,
 		"{location}", regionShortName.ShortName,
 		"{suffix}", strings.Join(suffixes, "~"),
 		"{instance}", instanceString,
