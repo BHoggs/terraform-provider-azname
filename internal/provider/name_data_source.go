@@ -55,10 +55,6 @@ func (d *AznameDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 func (d *AznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Data source for generating standardized Azure resource names following naming conventions.",
-		MarkdownDescription: `Data source for generating standardized Azure resource names following naming conventions.
-
-This data source uses templates to generate consistent resource names based on inputs like workload name,
-environment, resource type, and location. It supports both global resources and child resources.`,
 
 		Attributes: map[string]schema.Attribute{
 			"result": schema.StringAttribute{

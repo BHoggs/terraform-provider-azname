@@ -1,18 +1,20 @@
-# Terraform Provider Scaffolding (Terraform Plugin Framework)
+# Terraform Provider for Azure Resource Naming (azname)
 
-_This template repository is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). The template repository built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk) can be found at [terraform-provider-scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding). See [Which SDK Should I Use?](https://developer.hashicorp.com/terraform/plugin/framework-benefits) in the Terraform documentation for additional information._
+A [Terraform](https://www.terraform.io) provider for generating standardized Azure resource names following naming conventions. This provider helps maintain consistent resource naming across your Azure infrastructure by providing configurable templates and functions for generating resource names.
 
-This repository is a *template* for a [Terraform](https://www.terraform.io) provider. It is intended as a starting point for creating Terraform providers, containing:
+## Features
 
-- A resource and a data source (`internal/provider/`),
-- Examples (`examples/`) and generated documentation (`docs/`),
-- Miscellaneous meta files.
+- **Consistent Naming**: Generate Azure resource names following organizational standards with minimal configuration
+- **State Persistence**: Resource names are stored in Terraform state, protecting against unintended resource recreation when naming logic changes
+- **Flexible Templates**: Support for both global resources and child resources with configurable separators, prefixes, and suffixes
+- **Random Suffixes**: Optional random suffixes for globally unique resource names (e.g., storage accounts)
+- **Instance Numbering**: Built-in support for numbered instances with configurable padding
+- **Region Functions**: Provider functions to convert between Azure region names (full, short, and CLI formats)
+- **Clean Output**: Automatic removal of special characters to ensure Azure naming compliance
 
-These files contain boilerplate code that you will need to edit to create your own Terraform provider. Tutorials for creating Terraform providers can be found on the [HashiCorp Developer](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework) platform. _Terraform Plugin Framework specific guides are titled accordingly._
+## Why This Provider?
 
-Please see the [GitHub template repository documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for how to create a new repository from this template on GitHub.
-
-Once you've written your provider, you'll want to [publish it on the Terraform Registry](https://developer.hashicorp.com/terraform/registry/providers/publishing) so that others can use it.
+When working with Azure, maintaining consistent resource naming is critical. Azure treats resource names as immutable identifiers, so changes to name generation logic can trigger destructive rebuilds that cascade across your infrastructure. By persisting names in Terraform state, this provider protects you from unintended resource recreation and the associated downtime and data loss.
 
 ## Requirements
 
@@ -43,22 +45,115 @@ go mod tidy
 
 Then commit the changes to `go.mod` and `go.sum`.
 
-## Using the provider
+## Using the Provider
 
-Fill this in for each provider
+The provider is published on the [Terraform Registry](https://registry.terraform.io/providers/BHoggs/azname). Add it to your Terraform configuration:
+
+```terraform
+terraform {
+  required_providers {
+    azname = {
+      source  = "BHoggs/azname"
+      version = "~> 1.0"
+    }
+  }
+}
+
+provider "azname" {
+  separator       = "-"
+  random_length   = 4
+  instance_length = 3
+  clean_output    = true
+}
+```
+
+### Generate Resource Names with Data Source
+
+```terraform
+data "azname_name" "resource_group" {
+  name          = "myapp"
+  environment   = "prod"
+  resource_type = "rg"
+  location      = "westus2"
+}
+
+output "rg_name" {
+  value = data.azname_name.resource_group.result
+  # Example output: rg-myapp-prod-westus2-1234
+}
+```
+
+### Generate Resource Names with Resource
+
+Resources persist names in state, providing stability across runs:
+
+```terraform
+resource "azname_name" "storage" {
+  name          = "myapp"
+  environment   = "prod"
+  resource_type = "st"
+  location      = "westus2"
+}
+
+resource "azurerm_storage_account" "example" {
+  name                = azname_name.storage.result
+  resource_group_name = azurerm_resource_group.example.name
+  location           = azurerm_resource_group.example.location
+  # ... other configuration
+}
+```
+
+### Use Region Helper Functions
+
+```terraform
+# Convert region names between formats
+locals {
+  region_short = provider::azname::region_short_name("West US 2")    # "wus2"
+  region_cli   = provider::azname::region_cli_name("West US 2")      # "westus2"
+  region_full  = provider::azname::region_full_name("westus2")       # "West US 2"
+}
+```
+
+For complete documentation and examples, see the [provider documentation](https://registry.terraform.io/providers/BHoggs/azname/latest/docs).
 
 ## Developing the Provider
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
 
-To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
+### Building
 
-To generate or update documentation, run `go generate`.
+To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory:
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
+```shell
+go install
+```
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+### Documentation
+
+To generate or update documentation, run:
+
+```shell
+make gendocs
+```
+
+### Testing
+
+Run the full suite of acceptance tests:
 
 ```shell
 make testacc
 ```
+
+*Note:* Acceptance tests create real resources, and often cost money to run.
+
+### Local Development
+
+For local development and testing, you can use the provider locally by building it and configuring Terraform to use your local build. See the [Terraform documentation on local provider development](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers) for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

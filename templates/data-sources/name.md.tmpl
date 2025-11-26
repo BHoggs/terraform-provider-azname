@@ -1,0 +1,23 @@
+---
+page_title: "{{.Type}} {{.Name}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{ .Description | trimspace }}
+
+This data source uses templates to generate consistent resource names based on inputs like workload name,
+environment, resource type, and location. It supports both global resources and child resources.
+
+Data sources do not persist generated names in Terraform state. As a result, any changes to naming conventions or input parameters will lead to new names being generated on each run. This can cause issues with resource recreation in Azure, as resource names are immutable identifiers.
+
+~> **NOTE:** As data sources are not persisted in state, it's recommended to always set the `random_seed` attribute to ensure consistent random suffixes across runs.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/azname_name/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

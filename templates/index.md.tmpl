@@ -1,0 +1,35 @@
+---
+page_title: "Provider: azname"
+description: |-
+  Provider for generating standardized Azure resource names following naming conventions.
+---
+
+# azname Provider
+
+Provider for generating standardized Azure resource names following naming conventions.
+
+This provider helps maintain consistent resource naming across your Azure infrastructure by providing configurable templates
+and functions for generating resource names. It supports both global resources and child resources, with configurable
+separators, random suffixes, and instance numbers.
+
+#### Why is this provider needed?
+
+When working with Azure, maintaining consistent resource naming is critical. This provider makes it easy to align resource names to organizational standards with minimal input from developers. 
+
+A key advantage of this provider is that generated resource names are **stored in Terraform state**. This means your resource names remain stable even when naming conventions or input parameters change. Since Azure treats resource names as immutable identifiers, simple changes to name generation logic can trigger destructive rebuilds that cascade across your infrastructure. By persisting names in state, this provider protects you from unintended resource recreation and the associated downtime and data loss.
+
+#### Why not just a terraform module?
+
+While a terraform module can encapsulate most of the required functionality, it was:
+a. Not possible to store generated names in state without using resources.
+b. Require all parameters to be passed each time a name is needed, leading to repetitive code. This provider allows you to configure commmon settings at the provider level, or even as environment variables - which can be useful in CI/CD pipelines.
+
+#### What about azurecaf_name?
+
+The [azurecaf](https://registry.terraform.io/providers/aztfmod/azurecaf/latest) provider actually inspired the creation of this provider! However I wasn't satisfied with the functionality and ease of use of the `azurecaf_name` data source. I found that it was not flexible enough for my needs and I wanted to have more control over the naming process. It also does not persist naming in state, which is a key advantage of this provider.
+
+## Example Usage
+
+{{ tffile "examples/provider/provider.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

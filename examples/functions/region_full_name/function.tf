@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     azname = {
-      source = "registry.terraform.io/brett/azname"
+      source = "registry.terraform.io/BHoggs/azname"
     }
   }
 }

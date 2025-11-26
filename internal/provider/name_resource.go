@@ -58,13 +58,7 @@ func (r *AznameResource) Metadata(ctx context.Context, req resource.MetadataRequ
 
 func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: `Resource for generating standardized Azure resource names following naming conventions.
-
-This resource uses templates to generate consistent resource names based on inputs like workload name,
-environment, resource type, and location. It supports both global resources and child resources.
-
-The key difference from the data source version is that this resource version includes a "triggers" map 
-that can be used to force the generation of a new name when specific values change.`,
+		Description: "Resource for generating standardized Azure resource names following naming conventions.",
 
 		Attributes: map[string]schema.Attribute{
 			"result": schema.StringAttribute{
