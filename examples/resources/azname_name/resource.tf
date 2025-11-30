@@ -74,3 +74,20 @@ resource "azname_name" "special_storage" {
   prefixes = ["corp"]
   suffixes = ["primary"]
 }
+
+# Storage account without random_seed - random suffix shown as (known after apply)
+resource "azname_name" "storage_dynamic" {
+  name          = "data"
+  resource_type = "azurerm_storage_account"
+  location      = "eastus"
+  # Result will be something like "stdata123" but shown as (known after apply) in plan
+}
+
+# Storage account with random_seed - random suffix shown in plan
+resource "azname_name" "storage_deterministic" {
+  name          = "data"
+  resource_type = "azurerm_storage_account"
+  location      = "eastus"
+  random_seed   = 12345
+  # Result will always be "stdata897" and shown in plan output
+}

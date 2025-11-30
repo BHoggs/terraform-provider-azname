@@ -14,6 +14,14 @@ environment, resource type, and location. It supports both global resources and 
 
 The `azname_name` resource persists generated names in Terraform state. This means that once a name is generated, it remains stable even if naming conventions or input parameters change. This is crucial for Azure resources, as their names are immutable identifiers. By storing names in state, this resource helps prevent unintended resource recreation and the associated downtime and data loss.
 
+### Random Suffix Behavior
+
+For global-scope Azure resources (like storage accounts, key vaults, and container registries), unique names are required across all of Azure. The provider automatically appends random suffixes to these resources to ensure uniqueness.
+
+**Without `random_seed`:** The generated name with its random suffix will be shown as `(known after apply)` in the plan output. The random value is generated once during the apply phase and then persisted in state, ensuring the name remains stable across subsequent runs.
+
+**With `random_seed`:** When you provide a `random_seed` value, the random suffix becomes deterministic and will be shown in the plan output. This is useful when you need predictable names for testing or when coordinating names across multiple Terraform workspaces. The same seed will always produce the same random suffix.
+
 ## Example Usage
 
 {{ tffile "examples/resources/azname_name/resource.tf" }}

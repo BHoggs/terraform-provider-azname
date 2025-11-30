@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -21,6 +20,7 @@ import (
 // Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &AznameResource{}
 var _ resource.ResourceWithImportState = &AznameResource{}
+var _ resource.ResourceWithModifyPlan = &AznameResource{}
 
 func NewAznameResource() resource.Resource {
 	return &AznameResource{}
@@ -62,10 +62,7 @@ func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest,
 
 		Attributes: map[string]schema.Attribute{
 			"result": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				Computed:            true,
 				Description:         "The generated resource name following the configured template pattern.",
 				MarkdownDescription: "The generated resource name following the configured template pattern.",
 			},
@@ -112,7 +109,7 @@ func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"random_seed": schema.Int64Attribute{
 				Optional:            true,
 				Description:         "Seed value for random suffix generation. Use this to get consistent random values.",
-				MarkdownDescription: "Seed value for random suffix generation. Use this to get consistent random values.",
+				MarkdownDescription: "Seed value for random suffix generation. Use this to get consistent, deterministic random values that are shown in plan output. Without this, global-scope resources will show `(known after apply)` in plans.",
 			},
 			"location": schema.StringAttribute{
 				Optional:            true,
@@ -212,6 +209,70 @@ func (r *AznameResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 func (r *AznameResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This is a no-op because the resource is computed.
+}
+
+func (r *AznameResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// If we're destroying, no need to compute anything
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan AznameResourceModel
+	var state AznameResourceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Get current state (will be null for create operations)
+	if !req.State.Raw.IsNull() {
+		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	// If result already exists in state and is known, preserve it
+	// (only regenerate if creating or if result is unknown)
+	if !state.Result.IsNull() && !state.Result.IsUnknown() {
+		plan.Result = state.Result
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
+		return
+	}
+
+	// If custom_name is provided, use that
+	if !plan.CustomName.IsNull() {
+		plan.Result = plan.CustomName
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
+		return
+	}
+
+	// Check if this resource type requires randomness and no seed is provided
+	needsRandom, diags := NeedsRandomGeneration(ctx, plan.AznameNameModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If the resource needs random generation without a seed, mark result as unknown
+	// This prevents inconsistent plan errors since random values would differ between plan and apply
+	if needsRandom {
+		plan.Result = types.StringUnknown()
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
+		return
+	}
+
+	// Generate the name during planning so it's visible in terraform plan
+	config := *r.config
+	result, diags := GenerateName(ctx, plan.AznameNameModel, config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	plan.Result = types.StringValue(result)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (r *AznameResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

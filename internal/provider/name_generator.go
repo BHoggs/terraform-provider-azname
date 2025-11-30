@@ -38,6 +38,26 @@ func convertFromTfList[T any](ctx context.Context, list types.List) ([]T, error)
 	return result, nil
 }
 
+// NeedsRandomGeneration checks if a resource type requires random generation
+// and whether a random_seed has been provided. Returns true if randomness is
+// needed but no seed is provided, indicating the result should be unknown during plan.
+func NeedsRandomGeneration(ctx context.Context, state AznameNameModel) (bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	resourceType, err := resources.GetResourceDefinition(state.ResourceType.ValueString())
+	if err != nil {
+		diags.AddAttributeError(path.Root("resource_type"), "unknown resource type", err.Error())
+		return false, diags
+	}
+
+	// If the resource is global scope and no random_seed is provided, we need random generation
+	if resourceType.Scope == "global" && state.RandomSeed.IsNull() {
+		return true, diags
+	}
+
+	return false, diags
+}
+
 func GenerateName(ctx context.Context, state AznameNameModel, config AznameProviderModel) (string, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
