@@ -120,12 +120,20 @@ For complete documentation and examples, see the [provider documentation](https:
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
 
-### Building
+### Local Development
 
 To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory:
 
 ```shell
 go install
+```
+
+For local development and testing, you can use the provider locally by building it and configuring Terraform to use your local build. See the [Terraform documentation on local provider development](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers) for details.
+
+```json
+  dev_overrides {
+    "BHoggs/azname" = "<your GOPATH>/bin"
+  }
 ```
 
 ### Documentation
@@ -143,12 +151,6 @@ Run the full suite of acceptance tests:
 ```shell
 make testacc
 ```
-
-*Note:* Acceptance tests create real resources, and often cost money to run.
-
-### Local Development
-
-For local development and testing, you can use the provider locally by building it and configuring Terraform to use your local build. See the [Terraform documentation on local provider development](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers) for details.
 
 ## Contributing
 

@@ -57,6 +57,11 @@ func (d *AznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 		Description: "Data source for generating standardized Azure resource names following naming conventions.",
 
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "ID of the data source, same as result.",
+				MarkdownDescription: "ID of the data source, same as result.",
+			},
 			"result": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The generated resource name following the configured template pattern.",
@@ -145,6 +150,7 @@ func (d *AznameDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	// If a custom_name is provided, use that as the result
 	if !state.CustomName.IsNull() {
 		state.Result = state.CustomName
+		state.ID = state.CustomName
 		resp.State.Set(ctx, state)
 
 		return
@@ -157,5 +163,6 @@ func (d *AznameDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	state.Result = types.StringValue(result)
+	state.ID = types.StringValue(result)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

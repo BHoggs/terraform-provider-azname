@@ -32,6 +32,7 @@ type AznameResource struct {
 
 // These are shared between the resource and data source implementations.
 type AznameNameModel struct {
+	ID           types.String `tfsdk:"id"`
 	Result       types.String `tfsdk:"result"`
 	Name         types.String `tfsdk:"name"`
 	Environment  types.String `tfsdk:"environment"`
@@ -61,6 +62,11 @@ func (r *AznameResource) Schema(ctx context.Context, req resource.SchemaRequest,
 		Description: "Resource for generating standardized Azure resource names following naming conventions.",
 
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "ID of the resource, same as result.",
+				MarkdownDescription: "ID of the resource, same as result.",
+			},
 			"result": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The generated resource name following the configured template pattern.",
@@ -177,6 +183,7 @@ func (r *AznameResource) Create(ctx context.Context, req resource.CreateRequest,
 	// If a custom_name is provided, use that as the result
 	if !state.CustomName.IsNull() {
 		state.Result = state.CustomName
+		state.ID = state.CustomName
 		resp.State.Set(ctx, state)
 
 		return
@@ -189,6 +196,7 @@ func (r *AznameResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	state.Result = types.StringValue(result)
+	state.ID = types.StringValue(result)
 	resp.State.Set(ctx, state)
 }
 
@@ -237,6 +245,7 @@ func (r *AznameResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	// (only regenerate if creating or if result is unknown)
 	if !state.Result.IsNull() && !state.Result.IsUnknown() {
 		plan.Result = state.Result
+		plan.ID = state.ID
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 		return
 	}
@@ -244,6 +253,7 @@ func (r *AznameResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	// If custom_name is provided, use that
 	if !plan.CustomName.IsNull() {
 		plan.Result = plan.CustomName
+		plan.ID = plan.CustomName
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 		return
 	}
@@ -259,6 +269,7 @@ func (r *AznameResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	// This prevents inconsistent plan errors since random values would differ between plan and apply
 	if needsRandom {
 		plan.Result = types.StringUnknown()
+		plan.ID = types.StringUnknown()
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 		return
 	}
@@ -272,9 +283,10 @@ func (r *AznameResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	}
 
 	plan.Result = types.StringValue(result)
+	plan.ID = types.StringValue(result)
 	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (r *AznameResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("result"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

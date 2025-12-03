@@ -93,4 +93,5 @@ data "azname_name" "container" {
 
 ### Read-Only
 
+- `id` (String) ID of the data source, same as result.
 - `result` (String) The generated resource name following the configured template pattern.

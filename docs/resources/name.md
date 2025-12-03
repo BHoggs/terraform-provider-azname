@@ -144,6 +144,7 @@ resource "azname_name" "storage_deterministic" {
 
 ### Read-Only
 
+- `id` (String) ID of the resource, same as result.
 - `result` (String) The generated resource name following the configured template pattern.
 
 ## Import
