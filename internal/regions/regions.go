@@ -1,8 +1,14 @@
 package regions
 
 import (
+	"context"
 	"errors"
 	"strings"
+	"sync"
+
+	"terraform-provider-azname/internal/overrides"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type region struct {
@@ -93,6 +99,49 @@ var regionsList = []region{
 	{"westus", "West US", "wus", stringPtr("eastus")},
 	{"westus2", "West US 2", "wus2", stringPtr("westcentralus")},
 	{"westus3", "West US 3", "wus3", stringPtr("eastus")},
+}
+
+var overridesOnce sync.Once
+
+// ApplyOverrides merges override configuration into the regionsList.
+// This function is thread-safe and will only execute once using sync.Once.
+func ApplyOverrides(ctx context.Context, ovr *overrides.Overrides) {
+	if ovr == nil {
+		return
+	}
+
+	overridesOnce.Do(func() {
+		// Apply shortname overrides to existing regions
+		if ovr.RegionShortnameOverrides != nil {
+			for i := range regionsList {
+				if newShortName, ok := ovr.RegionShortnameOverrides[regionsList[i].CliName]; ok {
+					tflog.Debug(ctx, "Applying region shortname override", map[string]interface{}{
+						"cli_name":       regionsList[i].CliName,
+						"old_short_name": regionsList[i].ShortName,
+						"new_short_name": newShortName,
+					})
+					regionsList[i].ShortName = newShortName
+				}
+			}
+		}
+
+		// Add new regions from overrides
+		if ovr.NewRegions != nil {
+			for _, newRegion := range ovr.NewRegions {
+				tflog.Debug(ctx, "Adding new region", map[string]interface{}{
+					"full_name":  newRegion.FullName,
+					"cli_name":   newRegion.CliName,
+					"short_name": newRegion.ShortName,
+				})
+				regionsList = append(regionsList, region{
+					CliName:      newRegion.CliName,
+					FullName:     newRegion.FullName,
+					ShortName:    newRegion.ShortName,
+					PairedRegion: nil,
+				})
+			}
+		}
+	})
 }
 
 // GetRegionByShortName returns a region by its short name.

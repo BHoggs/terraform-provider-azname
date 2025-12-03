@@ -72,6 +72,166 @@ provider "azname" {
 }
 ```
 
+## Naming Templates
+
+The provider uses customizable templates to generate resource names. Understanding how templates work is key to getting consistent, predictable names.
+
+### Template Types
+
+There are two types of templates:
+
+#### Standard Template (for regular resources)
+
+**Default:** `{prefix}~{resource_type}~{workload}~{environment}~{service}~{location}{instance}{rand}~{suffix}`
+
+This template is used for regular Azure resources. The `~` character acts as a placeholder for the separator (default `-`). When processed, this generates names like:
+- `rg-myapp-prod-eus` (resource group)
+- `stmyappprodeus123` (storage account with random suffix)
+
+#### Child Template (for child resources)
+
+**Default:** `{parent_name}~{resource_type}{instance}~{rand}`
+
+This template is used when `parent_name` is provided, typically for resources that are children of another resource. For example:
+- `vnet-prod-eus-snet-001` (subnet within a virtual network)
+- `kv-prod-eus-key-signing` (key within a key vault)
+
+### Replacement Tokens
+
+The following tokens can be used in templates and will be replaced with corresponding values during name generation:
+
+| Token | Description | Example |
+|-------|-------------|---------|
+| `{prefix}` | List of prefixes joined by separator (only included if set) | `myorg-myapp` |
+| `{parent_name}` | Name of parent resource (can only be used in the child template) | `vnet-prod-eastus` |
+| `{resource_type}` | Azure resource type abbreviation (slug) | `rg`, `st`, `kv` |
+| `{workload}` | Workload/application name | `webapp`, `api` |
+| `{service}` | Service component name (only included if set at the resource level) | `frontend`, `backend` |
+| `{environment}` | Environment identifier | `dev`, `prod`, `test` |
+| `{location}` | Azure region short name | `eus`, `wus2`, `aue` |
+| `{instance}` | Zero-padded instance number (only included when set at the resource level) | `001`, `002` |
+| `{rand}` | Random suffix (only for global resources) | `123`, `456789` |
+| `{suffix}` | List of suffixes joined by separator (only included if set) | `v2-temp` |
+
+~> **Important:** While it's not mandatory to include every token in your template, it's **strongly recommended** to include at least `{workload}`, `{environment}`, and `{location}` to avoid name collisions across different resources, environments, and regions.
+
+### Template Customization Example
+
+```hcl
+provider "azname" {
+  # Simplified template with only essential components
+  template = "{workload}~{environment}~{resource_type}~{location}{rand}"
+  
+  # Custom child template
+  template_child = "{parent_name}~{resource_type}{instance}"
+  
+  # Common settings
+  environment = "prod"
+  location    = "eastus"
+  prefixes    = ["myorg"]
+}
+
+resource "azname_name" "rg" {
+  name          = "myapp"
+  resource_type = "azurerm_resource_group"
+  # Generates: myapp-prod-rg-eus
+}
+
+resource "azname_name" "vnet" {
+  name          = "myapp"
+  resource_type = "azurerm_virtual_network"
+  location      = "eastus"
+  # Generates: myapp-prod-vnet-eus
+}
+
+resource "azname_name" "subnet" {
+  name          = "web"
+  parent_name   = azname_name.vnet.result
+  resource_type = "azurerm_subnet"
+  instance      = 1
+  # Generates: myapp-prod-vnet-eus-snet-001
+}
+```
+
+## Customizing Resource Slugs and Regions (Overrides)
+
+The provider supports customization of resource abbreviations (slugs), region short names, and even adding completely new resource types or regions that aren't built into the provider. This is done via an `azname_overrides.yaml` file.
+
+### Auto-Discovery
+
+The provider will automatically search for and load an overrides file from:
+
+- `./azname_overrides.yaml` (current working directory)
+
+If an overrides file is found, it will be loaded automatically. If the file contains errors, a warning will be displayed but the provider will continue to work with default values.
+
+### Override File Structure
+
+The overrides file supports four main sections:
+
+#### 1. Resource Slug Overrides
+
+Override the default CAF abbreviations for existing Azure resource types:
+
+```yaml
+resource_slug_overrides:
+  azurerm_resource_group: "resourcegroup"    # Change "rg" to "resourcegroup"
+  azurerm_storage_account: "storage"         # Change "st" to "storage"
+  azurerm_key_vault: "vault"                 # Change "kv" to "vault"
+```
+
+#### 2. Region Shortname Overrides
+
+Override the short names used for existing Azure regions (matched by CLI name):
+
+```yaml
+region_shortname_overrides:
+  eastus: "use"           # Change "eus" to "use"
+  westus2: "usw2"         # Change "wus2" to "usw2"
+  australiaeast: "aue"    # Change "ae" to "aue"
+```
+
+#### 3. New Resources
+
+Define custom resource types not yet supported by the provider:
+
+```yaml
+new_resources:
+  azurerm_custom_resource:
+    slug: "custom"              # Resource abbreviation
+    min_length: 1               # Minimum name length
+    max_length: 63              # Maximum name length
+    scope: "resourceGroup"      # "global", "resourceGroup", or "parent"
+    dashes: true                # Whether dashes are allowed
+    lowercase: true             # Whether name should be lowercase
+```
+
+**Note:** Custom resources do not have regex validation applied, giving you full flexibility in naming.
+
+#### 4. New Regions
+
+Define custom regions not yet supported by the provider:
+
+```yaml
+new_regions:
+  customregion:
+    cli_name: "customregion"    # CLI name (used in lookups)
+    full_name: "Custom Region"  # Full display name
+    short_name: "cr"            # Short name for name generation
+```
+
+### Complete Example
+
+See the full example override file: [examples/azname_overrides.yaml](https://github.com/BHoggs/terraform-provider-azname/blob/main/examples/azname_overrides.yaml)
+
+### Usage Notes
+
+- **Thread-safe**: Overrides are applied once during provider initialization using `sync.Once`
+- **No provider code changes needed**: Overrides are merged into the base datasets, so all existing functionality works seamlessly
+- **Graceful degradation**: If the overrides file has errors, a warning is displayed and the provider continues with defaults
+- **Precedence**: Override values take precedence over built-in defaults
+- **Validation**: The file is validated on load to catch configuration errors early
+
 <!-- schema generated by tfplugindocs -->
 ## Schema
 
