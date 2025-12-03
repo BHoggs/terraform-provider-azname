@@ -238,18 +238,9 @@ func TestValidateOverrides(t *testing.T) {
 }
 
 func TestDiscoverAndLoadOverrides(t *testing.T) {
-	// Save original working directory
-	originalWD, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("Failed to get working directory: %v", err)
-	}
-
 	t.Run("No override file found", func(t *testing.T) {
 		tmpDir := t.TempDir()
-		if err := os.Chdir(tmpDir); err != nil {
-			t.Fatalf("Failed to change directory: %v", err)
-		}
-		defer os.Chdir(originalWD)
+		t.Chdir(tmpDir)
 
 		ovr, err := DiscoverAndLoadOverrides()
 		if err != nil {
@@ -262,10 +253,7 @@ func TestDiscoverAndLoadOverrides(t *testing.T) {
 
 	t.Run("Override file in current directory", func(t *testing.T) {
 		tmpDir := t.TempDir()
-		if err := os.Chdir(tmpDir); err != nil {
-			t.Fatalf("Failed to change directory: %v", err)
-		}
-		defer os.Chdir(originalWD)
+		t.Chdir(tmpDir)
 
 		validYAML := `version: "1.0"
 resource_slug_overrides:

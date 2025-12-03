@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Overrides represents the complete override configuration from azname_overrides.yaml
+// Overrides represents the complete override configuration from azname_overrides.yaml.
 type Overrides struct {
 	// Override slugs for existing resources
 	ResourceSlugOverrides map[string]string `yaml:"resource_slug_overrides"`
@@ -24,7 +24,7 @@ type Overrides struct {
 }
 
 // NewResourceDefinition defines a custom resource type with simplified schema
-// (no regex validation required)
+// (no regex validation required).
 type NewResourceDefinition struct {
 	// Resource prefix/slug (e.g., "rg", "st")
 	Slug string `yaml:"slug"`
@@ -45,7 +45,7 @@ type NewResourceDefinition struct {
 	Lowercase bool `yaml:"lowercase"`
 }
 
-// NewRegionDefinition defines a custom region with display name and short name
+// NewRegionDefinition defines a custom region with display name and short name.
 type NewRegionDefinition struct {
 	// CLI name (e.g., "westus2")
 	CliName string `yaml:"cli_name"`
@@ -57,7 +57,7 @@ type NewRegionDefinition struct {
 	ShortName string `yaml:"short_name"`
 }
 
-// LoadOverrides loads override configuration from the specified file path
+// LoadOverrides loads override configuration from the specified file path.
 func LoadOverrides(filePath string) (*Overrides, error) {
 	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -85,8 +85,8 @@ func LoadOverrides(filePath string) (*Overrides, error) {
 }
 
 // DiscoverAndLoadOverrides attempts to auto-discover and load an overrides file
-// Searches for ./azname_overrides.yaml in the current working directory
-// Returns nil without error if no file is found (graceful degradation)
+// Searches for ./azname_overrides.yaml in the current working directory.
+// Returns nil without error if no file is found (graceful degradation).
 func DiscoverAndLoadOverrides() (*Overrides, error) {
 	// Get current working directory
 	cwd, err := os.Getwd()
@@ -105,7 +105,7 @@ func DiscoverAndLoadOverrides() (*Overrides, error) {
 	return nil, nil
 }
 
-// validateOverrides performs basic validation on the override configuration
+// validateOverrides performs basic validation on the override configuration.
 func validateOverrides(o *Overrides) error {
 	// Validate new resource definitions
 	for name, resource := range o.NewResources {
