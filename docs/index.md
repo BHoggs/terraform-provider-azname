@@ -72,6 +72,87 @@ provider "azname" {
 }
 ```
 
+## Naming Templates
+
+The provider uses customizable templates to generate resource names. Understanding how templates work is key to getting consistent, predictable names.
+
+### Template Types
+
+There are two types of templates:
+
+#### Standard Template (for regular resources)
+
+**Default:** `{prefix}~{resource_type}~{workload}~{environment}~{service}~{location}{instance}{rand}~{suffix}`
+
+This template is used for regular Azure resources. The `~` character acts as a placeholder for the separator (default `-`). When processed, this generates names like:
+- `rg-myapp-prod-eus` (resource group)
+- `stmyappprodeus123` (storage account with random suffix)
+
+#### Child Template (for child resources)
+
+**Default:** `{parent_name}~{resource_type}{instance}~{rand}`
+
+This template is used when `parent_name` is provided, typically for resources that are children of another resource. For example:
+- `vnet-prod-eus-snet-001` (subnet within a virtual network)
+- `kv-prod-eus-key-signing` (key within a key vault)
+
+### Replacement Tokens
+
+The following tokens can be used in templates and will be replaced with corresponding values during name generation:
+
+| Token | Description | Example |
+|-------|-------------|---------|
+| `{prefix}` | List of prefixes joined by separator (only included if set) | `myorg-myapp` |
+| `{parent_name}` | Name of parent resource (can only be used in the child template) | `vnet-prod-eastus` |
+| `{resource_type}` | Azure resource type abbreviation (slug) | `rg`, `st`, `kv` |
+| `{workload}` | Workload/application name | `webapp`, `api` |
+| `{service}` | Service component name (only included if set at the resource level) | `frontend`, `backend` |
+| `{environment}` | Environment identifier | `dev`, `prod`, `test` |
+| `{location}` | Azure region short name | `eus`, `wus2`, `aue` |
+| `{instance}` | Zero-padded instance number (only included when set at the resource level) | `001`, `002` |
+| `{rand}` | Random suffix (only for global resources) | `123`, `456789` |
+| `{suffix}` | List of suffixes joined by separator (only included if set) | `v2-temp` |
+
+~> **Important:** While it's not mandatory to include every token in your template, it's **strongly recommended** to include at least `{workload}`, `{environment}`, and `{location}` to avoid name collisions across different resources, environments, and regions.
+
+### Template Customization Example
+
+```hcl
+provider "azname" {
+  # Simplified template with only essential components
+  template = "{workload}~{environment}~{resource_type}~{location}{rand}"
+  
+  # Custom child template
+  template_child = "{parent_name}~{resource_type}{instance}"
+  
+  # Common settings
+  environment = "prod"
+  location    = "eastus"
+  prefixes    = ["myorg"]
+}
+
+resource "azname_name" "rg" {
+  name          = "myapp"
+  resource_type = "azurerm_resource_group"
+  # Generates: myapp-prod-rg-eus
+}
+
+resource "azname_name" "vnet" {
+  name          = "myapp"
+  resource_type = "azurerm_virtual_network"
+  location      = "eastus"
+  # Generates: myapp-prod-vnet-eus
+}
+
+resource "azname_name" "subnet" {
+  name          = "web"
+  parent_name   = azname_name.vnet.result
+  resource_type = "azurerm_subnet"
+  instance      = 1
+  # Generates: myapp-prod-vnet-eus-snet-001
+}
+```
+
 ## Customizing Resource Slugs and Regions (Overrides)
 
 The provider supports customization of resource abbreviations (slugs), region short names, and even adding completely new resource types or regions that aren't built into the provider. This is done via an `azname_overrides.yaml` file.
