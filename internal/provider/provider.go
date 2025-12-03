@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -16,6 +17,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"terraform-provider-azname/internal/overrides"
+	"terraform-provider-azname/internal/regions"
+	"terraform-provider-azname/internal/resources"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -242,6 +248,22 @@ func (p *AznameProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	// Load and apply overrides from azname_overrides.yaml
+	ovr, err := overrides.DiscoverAndLoadOverrides()
+	if err != nil {
+		// Only warn if file exists but is invalid
+		resp.Diagnostics.AddWarning(
+			"Override loading failed",
+			fmt.Sprintf("Failed to load overrides from azname_overrides.yaml: %s. Continuing without overrides.", err.Error()),
+		)
+	}
+	if ovr != nil {
+		// Overrides file found and loaded successfully
+		tflog.Info(ctx, "Applying overrides from azname_overrides.yaml")
+		regions.ApplyOverrides(ctx, ovr)
+		resources.ApplyOverrides(ctx, ovr)
 	}
 
 	resp.ResourceData = &config

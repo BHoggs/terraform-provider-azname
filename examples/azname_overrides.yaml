@@ -1,0 +1,78 @@
+# azname_overrides.yaml
+# 
+# This file allows you to customize the azname provider's resource slugs and region shortnames
+# to match your organization's naming standards. Place this file in your Terraform project root.
+#
+# The provider will automatically discover this file in the current directory:
+# - ./azname_overrides.yaml
+
+# Override resource slugs (CAF prefixes) for existing resources
+# Use this to change the default abbreviations to match your naming conventions
+resource_slug_overrides:
+  # Example: Change "rg" to "azrg"
+  azurerm_resource_group: "azrg"
+  
+  # Example: Change "st" to "sto"
+  azurerm_storage_account: "sto"
+  
+  # Example: Change "kv" to "vault"
+  azurerm_key_vault: "vault"
+  
+  # Example: Change "vnet" to "net"
+  azurerm_virtual_network: "net"
+  
+  # Add more overrides as needed...
+
+# Override region shortnames for existing Azure regions
+# The key can be the CLI name, full name, or existing short name
+region_shortname_overrides:
+  # Example: Override "East US" to use "use" instead of default "eus"
+  eastus: "use"
+  
+  # Example: Override "West US 2" to use "usw2" instead of default "wus2"
+  westus2: "usw2"
+  
+  # Example: Override "Australia East" to use "aue" instead of default "ae"
+  australiaeast: "aue"
+  
+  # Add more overrides as needed...
+
+# Define completely new resources not yet supported by the provider
+# This allows you to use the provider for custom or newly released Azure resources
+new_resources:
+  # Example: Define a custom resource type
+  azurerm_custom_resource:
+    slug: "custom"           # Resource abbreviation/prefix
+    min_length: 1            # Minimum name length
+    max_length: 63           # Maximum name length
+    scope: "resourceGroup"   # Where the name must be unique: "global", "resourceGroup", or "parent"
+    dashes: true             # Whether dashes are allowed in the name
+    lowercase: true          # Whether the name should be lowercase
+  
+  # Example: Define a new Azure resource not yet in the provider
+  azurerm_app_configuration:
+    slug: "appconfig"
+    min_length: 5
+    max_length: 50
+    scope: "global"          # App Configuration names are globally unique
+    dashes: true
+    lowercase: true
+  
+  # Add more custom resources as needed...
+
+# Define completely new regions not yet supported by the provider
+# Useful for new Azure regions or custom/private cloud locations
+new_regions:
+  # Example: Define a custom region
+  customregion:
+    cli_name: "customregion"        # CLI name (used in Azure CLI/API)
+    full_name: "Custom Region"      # Full display name
+    short_name: "cust"              # Short name for name generation
+  
+  # Example: Define a new Azure region not yet in the provider
+  mexiconorth:
+    cli_name: "mexiconorth"
+    full_name: "Mexico North"
+    short_name: "mexn"
+  
+  # Add more custom regions as needed...
