@@ -18,7 +18,7 @@ When working with Azure, maintaining consistent resource naming is critical. Azu
 
 ## Requirements
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.8
 - [Go](https://golang.org/doc/install) >= 1.21
 
 ## Building The Provider
@@ -73,13 +73,13 @@ provider "azname" {
 data "azname_name" "resource_group" {
   name          = "myapp"
   environment   = "prod"
-  resource_type = "rg"
+  resource_type = "azurerm_resource_group"
   location      = "westus2"
 }
 
 output "rg_name" {
   value = data.azname_name.resource_group.result
-  # Example output: rg-myapp-prod-westus2-1234
+  # Example output: rg-myapp-prod-wus2
 }
 ```
 
@@ -91,7 +91,7 @@ Resources persist names in state, providing stability across runs:
 resource "azname_name" "storage" {
   name          = "myapp"
   environment   = "prod"
-  resource_type = "st"
+  resource_type = "azurerm_storage_account"
   location      = "westus2"
 }
 

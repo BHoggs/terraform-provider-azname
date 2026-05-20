@@ -84,8 +84,8 @@ func (d *AznameDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 			},
 			"resource_type": schema.StringAttribute{
 				Required:            true,
-				Description:         "The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).",
-				MarkdownDescription: "The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).",
+				Description:         "The Azure resource type name (e.g., azurerm_resource_group, azurerm_key_vault).",
+				MarkdownDescription: "The Azure resource type name (e.g., azurerm_resource_group, azurerm_key_vault).",
 			},
 			"prefixes": schema.ListAttribute{
 				Optional:            true,

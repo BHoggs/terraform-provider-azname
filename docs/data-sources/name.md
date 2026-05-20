@@ -76,7 +76,7 @@ data "azname_name" "container" {
 ### Required
 
 - `name` (String) The workload or application name to use in the resource name.
-- `resource_type` (String) The Azure resource type abbreviation (e.g., rg for resource group, kv for key vault).
+- `resource_type` (String) The Azure resource type name (e.g., azurerm_resource_group, azurerm_key_vault).
 
 ### Optional
 

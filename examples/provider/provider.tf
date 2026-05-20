@@ -20,6 +20,8 @@ provider "azname" {
 # Advanced provider configuration with prefixes and suffixes
 # These will be applied to all generated names
 provider "azname" {
+  alias = "advanced"
+
   separator     = "-"
   random_length = 4
 

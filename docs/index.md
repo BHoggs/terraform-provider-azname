@@ -20,7 +20,7 @@ A key advantage of this provider is that generated resource names are **stored i
 #### Why not just a terraform module?
 While a terraform module can encapsulate most of the required functionality, it was:
 a. Not possible to store generated names in state without using resources.
-b. Require all parameters to be passed each time a name is needed, leading to repetitive code. This provider allows you to configure commmon settings at the provider level, or even as environment variables - which can be useful in CI/CD pipelines.
+b. Require all parameters to be passed each time a name is needed, leading to repetitive code. This provider allows you to configure common settings at the provider level, or even as environment variables - which can be useful in CI/CD pipelines.
 
 #### What about azurecaf_name?
 The [azurecaf](https://registry.terraform.io/providers/aztfmod/azurecaf/latest) provider actually inspired the creation of this provider! However I wasn't satisfied with the functionality and ease of use of the `azurecaf_name` data source. I found that it was not flexible enough for my needs and I wanted to have more control over the naming process. It also does not persist naming in state, which is a key advantage of this provider.
@@ -50,6 +50,8 @@ provider "azname" {
 # Advanced provider configuration with prefixes and suffixes
 # These will be applied to all generated names
 provider "azname" {
+  alias = "advanced"
+
   separator     = "-"
   random_length = 4
 
@@ -177,7 +179,7 @@ resource_slug_overrides:
 
 #### 2. Region Shortname Overrides
 
-Override the short names used for existing Azure regions (matched by CLI name):
+Override the short names used for existing Azure regions (keys are matched by CLI name):
 
 ```yaml
 region_shortname_overrides:
