@@ -24,7 +24,7 @@ resource_slug_overrides:
   # Add more overrides as needed...
 
 # Override region shortnames for existing Azure regions
-# The key can be the CLI name, full name, or existing short name
+# Keys are matched by Azure CLI name (e.g., eastus, westus2)
 region_shortname_overrides:
   # Example: Override "East US" to use "use" instead of default "eus"
   eastus: "use"
